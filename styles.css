@@ -43,9 +43,11 @@ code,pre,kbd{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monos
 #nav{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:2px 0}
 .nav-group{display:flex;flex-direction:column;gap:4px}
 .nav-group-title{padding:0 10px;color:var(--muted-foreground);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
-#nav a{display:block;padding:9px 10px;border-radius:10px;color:var(--foreground);font-size:13px}
-#nav a:hover{background:var(--secondary);text-decoration:none}
-#nav a.active{background:var(--secondary);color:var(--primary);font-weight:600;border:1px solid color-mix(in srgb,var(--primary) 14%,var(--border))}
+#nav a{display:flex;align-items:center;min-height:38px;padding:9px 10px;border-radius:10px;color:color-mix(in srgb,var(--foreground) 92%,black);font-size:13px;background:color-mix(in srgb,var(--card) 82%,transparent);border:1px solid color-mix(in srgb,var(--border) 88%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+#nav a:hover{background:var(--secondary);border-color:color-mix(in srgb,var(--primary) 16%,var(--border));text-decoration:none}
+#nav a.active{background:var(--secondary);color:var(--primary);font-weight:600;border:1px solid color-mix(in srgb,var(--primary) 20%,var(--border));box-shadow:0 4px 14px rgba(36,91,255,.08)}
+#nav a::before{content:attr(data-label);color:inherit;font-weight:600;line-height:1.35}
+.nav-link-text{display:block;color:inherit;font-weight:600;line-height:1.35}
 .nav-empty{padding:10px;color:var(--muted-foreground);font-size:13px;border:1px dashed var(--border);border-radius:10px}
 .sidebar-foot{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--border);padding-top:12px}
 .theme-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}

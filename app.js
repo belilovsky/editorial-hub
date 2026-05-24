@@ -159,9 +159,13 @@
       sections.forEach(s=>{
         const a = document.createElement('a');
         a.href = '#'+s.id;
-        a.textContent = s.title;
+        a.innerHTML = `<span class="nav-link-text">${esc(s.title)}</span>`;
         a.dataset.id = s.id;
-        if(location.hash.slice(1) === s.id) a.classList.add('active');
+        a.dataset.label = s.title;
+        if(location.hash.slice(1) === s.id){
+          a.classList.add('active');
+          a.setAttribute('aria-current', 'true');
+        }
         wrap.appendChild(a);
       });
       navEl.appendChild(wrap);
@@ -225,7 +229,12 @@
         ${renderSignalPills(quickItems)}
         <article class="doc-body">${content}</article>
       </div>`;
-    navEl.querySelectorAll('a').forEach(a=>a.classList.toggle('active', a.dataset.id===s.id));
+    navEl.querySelectorAll('a').forEach(a=>{
+      const active = a.dataset.id === s.id;
+      a.classList.toggle('active', active);
+      if(active) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
     document.title = `${s.title} \u2014 ${D.meta.title}`;
   }
   function exportMd(e){
