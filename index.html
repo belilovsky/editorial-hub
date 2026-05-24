@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Editorial Hub — Редакционная политика</title>
+<meta name="description" content="Editorial Hub — редакционная политика для мультиплатформенных контент-проектов (RU/KZ, AI-policy)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -18,14 +19,24 @@
   <div class="search-wrap"><input id="search" type="search" placeholder="Поиск по разделам…" autocomplete="off"></div>
   <nav id="nav"></nav>
   <div class="sidebar-foot">
-    <button id="themeToggle" title="Тема">◐ Тема</button>
-    <a id="exportMd" href="#">↓ Markdown</a>
+    <div class="theme-row" id="themeRow">
+      <button data-theme="light" title="Light">Light</button>
+      <button data-theme="dark" title="Dark">Dark</button>
+      <button data-theme="institutional" title="Institutional">Inst</button>
+      <button data-theme="golden-paper" title="Golden paper">Gold</button>
+      <button data-theme="cyber-dark" title="Cyber dark">Cyber</button>
+    </div>
+    <div class="foot-row">
+      <a id="exportMd" href="#" title="Экспорт раздела. Shift+клик — всё целиком">↓ Markdown</a>
+      <a href="https://github.com/belilovsky/editorial-hub" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="foot-meta">AV Design System 3.7.2 · editorial-hub v1.0</div>
   </div>
 </aside>
 <main id="main">
   <header id="topbar">
     <div id="crumb">Обзор</div>
-    <div class="top-actions"><a class="chip" href="https://github.com/belilovsky/editorial-hub" target="_blank">GitHub</a></div>
+    <div class="top-actions"><span class="chip" title="Статус">stable · main</span><a class="chip" href="https://github.com/belilovsky/editorial-hub" target="_blank" rel="noopener">GitHub ↗</a></div>
   </header>
   <section id="view"></section>
 </main>

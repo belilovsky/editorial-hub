@@ -3,21 +3,26 @@
   const navEl = document.getElementById('nav');
   const viewEl = document.getElementById('view');
   const crumbEl = document.getElementById('crumb');
-  const themeBtn = document.getElementById('themeToggle');
+  const themeRow = document.getElementById('themeRow');
   const exportBtn = document.getElementById('exportMd');
   const searchEl = document.getElementById('search');
   const html = document.documentElement;
+  const THEMES = ['light','dark','institutional','golden-paper','cyber-dark'];
 
-  // theme
-  const savedTheme = localStorage.getItem('eh-theme') || 'dark';
-  html.setAttribute('data-theme', savedTheme);
-  themeBtn && themeBtn.addEventListener('click', ()=>{
-    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('eh-theme', next);
+  function applyTheme(t){
+    if(!THEMES.includes(t)) t = 'dark';
+    html.setAttribute('data-theme', t);
+    localStorage.setItem('eh-theme', t);
+    if(themeRow) themeRow.querySelectorAll('button').forEach(b=>{
+      b.setAttribute('aria-pressed', b.dataset.theme === t ? 'true' : 'false');
+    });
+  }
+  applyTheme(localStorage.getItem('eh-theme') || 'dark');
+  themeRow && themeRow.addEventListener('click', e=>{
+    const b = e.target.closest('button[data-theme]'); if(!b) return;
+    applyTheme(b.dataset.theme);
   });
 
-  // tiny markdown renderer (headings, lists, tables, code, bold, links, checkboxes)
   function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
   function inline(s){
     s = esc(s);
@@ -30,8 +35,7 @@
     const lines = src.split('\n');
     let out = [], i = 0;
     while(i < lines.length){
-      const l = lines[i];
-      let m;
+      const l = lines[i]; let m;
       if(m = l.match(/^(#{1,6})\s+(.*)$/)){ const n=m[1].length; out.push(`<h${n}>${inline(m[2])}</h${n}>`); i++; continue; }
       if(l.startsWith('| ')){
         const rows = [];
@@ -41,32 +45,26 @@
           let t='<table><thead><tr>'+cells[0].map(c=>`<th>${inline(c)}</th>`).join('')+'</tr></thead><tbody>';
           for(let k=2;k<cells.length;k++) t+='<tr>'+cells[k].map(c=>`<td>${inline(c)}</td>`).join('')+'</tr>';
           out.push(t+'</tbody></table>');
-        } else {
-          out.push('<pre>'+rows.map(esc).join('\n')+'</pre>');
-        }
+        } else { out.push('<pre>'+rows.map(esc).join('\n')+'</pre>'); }
         continue;
       }
       if(/^[-*]\s+\[[ x]\]\s+/.test(l)){
         let items=[];
         while(i<lines.length && /^[-*]\s+\[[ x]\]\s+/.test(lines[i])){
           const mm = lines[i].match(/^[-*]\s+\[([ x])\]\s+(.*)$/);
-          items.push(`<li><input type="checkbox" disabled ${mm[1]==='x'?'checked':''}> ${inline(mm[2])}</li>`);
-          i++;
+          items.push(`<li><input type="checkbox" disabled ${mm[1]==='x'?'checked':''}> ${inline(mm[2])}</li>`); i++;
         }
-        out.push('<ul class="checklist">'+items.join('')+'</ul>');
-        continue;
+        out.push('<ul class="checklist">'+items.join('')+'</ul>'); continue;
       }
       if(/^[-*]\s+/.test(l)){
         let items=[];
         while(i<lines.length && /^[-*]\s+/.test(lines[i])){ items.push('<li>'+inline(lines[i].replace(/^[-*]\s+/,''))+'</li>'); i++; }
-        out.push('<ul>'+items.join('')+'</ul>');
-        continue;
+        out.push('<ul>'+items.join('')+'</ul>'); continue;
       }
       if(/^\d+\.\s+/.test(l)){
         let items=[];
         while(i<lines.length && /^\d+\.\s+/.test(lines[i])){ items.push('<li>'+inline(lines[i].replace(/^\d+\.\s+/,''))+'</li>'); i++; }
-        out.push('<ol>'+items.join('')+'</ol>');
-        continue;
+        out.push('<ol>'+items.join('')+'</ol>'); continue;
       }
       if(l.trim()===''){ i++; continue; }
       let para=[l]; i++;
@@ -87,7 +85,6 @@
       navEl.appendChild(a);
     });
   }
-
   function renderView(){
     const id = location.hash.slice(1) || D.sections[0].id;
     const s = D.sections.find(x=>x.id===id) || D.sections[0];
@@ -96,19 +93,17 @@
     navEl.querySelectorAll('a').forEach(a=>a.classList.toggle('active', a.dataset.id===s.id));
     document.title = `${s.title} \u2014 ${D.meta.title}`;
   }
-
   function exportMd(e){
     e && e.preventDefault();
     const all = e && e.shiftKey;
     let content, name;
     if(all){
-      content = `# ${D.meta.title} v${D.meta.version}\n\n` + D.sections.map(s=>s.body).join('\n\n---\n\n');
+      content = `# ${D.meta.title} v${D.meta.version}\n\n` + D.sections.map(s=>'## '+s.title+'\n\n'+s.body).join('\n\n---\n\n');
       name = `editorial-hub-v${D.meta.version}.md`;
     } else {
       const id = location.hash.slice(1) || D.sections[0].id;
       const s = D.sections.find(x=>x.id===id) || D.sections[0];
-      content = s.body;
-      name = `${s.id}.md`;
+      content = s.body; name = `${s.id}.md`;
     }
     const blob = new Blob([content], {type:'text/markdown;charset=utf-8'});
     const url = URL.createObjectURL(blob);
