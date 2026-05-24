@@ -73,7 +73,7 @@
         let items=[];
         while(i<lines.length && /^[-*]\s+\[[ x]\]\s+/.test(lines[i])){
           const mm = lines[i].match(/^[-*]\s+\[([ x])\]\s+(.*)$/);
-          items.push(`<li><input type="checkbox" disabled ${mm[1]==='x'?'checked':''}> ${inline(mm[2])}</li>`); i++;
+          items.push(`<li><input type="checkbox" disabled aria-label="${esc(mm[2])}" ${mm[1]==='x'?'checked':''}> ${inline(mm[2])}</li>`); i++;
         }
         out.push('<ul class="checklist">'+items.join('')+'</ul>'); continue;
       }
