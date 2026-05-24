@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editorial Hub — Редакционная политика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<aside id="sidebar">
+  <div class="brand">
+    <div class="logo">EH</div>
+    <div><div class="brand-title">Editorial Hub</div><div class="brand-sub">v1.0 · RU / KZ</div></div>
+  </div>
+  <div class="search-wrap"><input id="search" type="search" placeholder="Поиск по разделам…" autocomplete="off"></div>
+  <nav id="nav"></nav>
+  <div class="sidebar-foot">
+    <button id="themeToggle" title="Тема">◐ Тема</button>
+    <a id="exportMd" href="#">↓ Markdown</a>
+  </div>
+</aside>
+<main id="main">
+  <header id="topbar">
+    <div id="crumb">Обзор</div>
+    <div class="top-actions"><a class="chip" href="https://github.com/belilovsky/editorial-hub" target="_blank">GitHub</a></div>
+  </header>
+  <section id="view"></section>
+</main>
+<script src="./data.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
