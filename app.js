@@ -10,7 +10,7 @@
   const searchEl = document.getElementById('search');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
-  const FEATURED_OVERVIEW_IDS = ['principles', 'ai-policy', 'factcheck', 'corrections', 'platforms', 'sources'];
+  const FEATURED_OVERVIEW_IDS = ['sources', 'factcheck', 'ai-policy', 'corrections', 'elections', 'bilingual-workflow'];
 
   function getStoredTheme(){
     try { return localStorage.getItem('eh-theme'); }
@@ -99,6 +99,12 @@
     return body.replace(/^#\s+.+\n+/,'');
   }
 
+  function titleOf(section){
+    if(section && section.title) return section.title;
+    const heading = section && section.body ? section.body.match(/^#\s+(.+)$/m) : null;
+    return heading ? heading[1] : (section && section.id ? section.id : 'Раздел');
+  }
+
   function firstParagraph(body){
     const lines = body.split('\n');
     for(const line of lines){
@@ -133,7 +139,7 @@
     const q = (filter || '').toLowerCase().trim();
     const groups = new Map();
     D.sections.forEach(section=>{
-      const haystack = `${section.title}\n${section.summary || ''}\n${section.body}`.toLowerCase();
+      const haystack = `${titleOf(section)}\n${section.summary || ''}\n${section.body}`.toLowerCase();
       if(q && !haystack.includes(q)) return;
       const key = section.group || 'Разделы';
       if(!groups.has(key)) groups.set(key, []);
@@ -157,11 +163,12 @@
       label.textContent = title;
       wrap.appendChild(label);
       sections.forEach(s=>{
+        const title = titleOf(s);
         const a = document.createElement('a');
         a.href = '#'+s.id;
-        a.innerHTML = `<span class="nav-link-text">${esc(s.title)}</span>`;
+        a.innerHTML = `<span class="nav-link-text">${esc(title)}</span>`;
         a.dataset.id = s.id;
-        a.dataset.label = s.title;
+        a.dataset.label = title;
         if(location.hash.slice(1) === s.id){
           a.classList.add('active');
           a.setAttribute('aria-current', 'true');
@@ -175,9 +182,10 @@
   function renderOverviewCards(){
     return FEATURED_OVERVIEW_IDS.map(id=>{
       const section = sectionById(id);
+      const title = titleOf(section);
       return `<a class="overview-card" href="#${section.id}">
         <div class="overview-label">${esc(section.group || 'Раздел')}</div>
-        <h2 class="overview-title">${esc(section.title)}</h2>
+        <h2 class="overview-title">${esc(title)}</h2>
         <div class="overview-note">${esc(section.summary || firstParagraph(section.body))}</div>
       </a>`;
     }).join('');
@@ -194,6 +202,7 @@
   function renderView(){
     const id = location.hash.slice(1) || D.sections[0].id;
     const s = sectionById(id);
+    const title = titleOf(s);
     const summary = s.summary || firstParagraph(s.body);
     const quickItems = excerptItems(s.body, 4);
     const content = md(stripFirstHeading(s.body));
@@ -205,7 +214,7 @@
       <div class="section-shell">
         <section class="section-header">
           <div class="section-eyebrow">${esc(s.id)}</div>
-          <h1 class="section-title">${esc(s.title)}</h1>
+          <h1 class="section-title">${esc(title)}</h1>
           <p class="section-summary">${esc(summary)}</p>
         </section>
         <section class="meta-grid">
@@ -235,14 +244,14 @@
       if(active) a.setAttribute('aria-current', 'true');
       else a.removeAttribute('aria-current');
     });
-    document.title = `${s.title} \u2014 ${D.meta.title}`;
+    document.title = `${title} \u2014 ${D.meta.title}`;
   }
   function exportMd(e){
     e && e.preventDefault();
     const all = e && e.shiftKey;
     let content, name;
     if(all){
-      content = `# ${D.meta.title} v${D.meta.version}\n\n` + D.sections.map(s=>'## '+s.title+'\n\n'+s.body).join('\n\n---\n\n');
+      content = `# ${D.meta.title} v${D.meta.version}\n\n` + D.sections.map(s=>'## '+titleOf(s)+'\n\n'+s.body).join('\n\n---\n\n');
       name = `editorial-hub-v${D.meta.version}.md`;
     } else {
       const id = location.hash.slice(1) || D.sections[0].id;
