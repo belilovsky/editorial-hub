@@ -3,32 +3,53 @@
   const navEl = document.getElementById('nav');
   const viewEl = document.getElementById('view');
   const crumbEl = document.getElementById('crumb');
+  const sectionLeadEl = document.getElementById('sectionLead');
+  const sectionStatsEl = document.getElementById('sectionStats');
   const themeRow = document.getElementById('themeRow');
   const exportBtn = document.getElementById('exportMd');
   const searchEl = document.getElementById('search');
   const html = document.documentElement;
-  const THEMES = ['light','dark','institutional','golden-paper','cyber-dark'];
+  const THEMES = ['light','dark','golden-paper'];
+  const FEATURED_OVERVIEW_IDS = ['principles', 'ai-policy', 'factcheck', 'corrections', 'platforms', 'sources'];
+
+  function getStoredTheme(){
+    try { return localStorage.getItem('eh-theme'); }
+    catch(_e){ return null; }
+  }
+
+  function setStoredTheme(value){
+    try { localStorage.setItem('eh-theme', value); }
+    catch(_e){}
+  }
 
   function applyTheme(t){
-    if(!THEMES.includes(t)) t = 'dark';
+    if(!THEMES.includes(t)) t = 'light';
     html.setAttribute('data-theme', t);
-    localStorage.setItem('eh-theme', t);
+    setStoredTheme(t);
     if(themeRow) themeRow.querySelectorAll('button').forEach(b=>{
       b.setAttribute('aria-pressed', b.dataset.theme === t ? 'true' : 'false');
     });
   }
-  applyTheme(localStorage.getItem('eh-theme') || 'dark');
+  applyTheme(getStoredTheme() || 'light');
   themeRow && themeRow.addEventListener('click', e=>{
     const b = e.target.closest('button[data-theme]'); if(!b) return;
     applyTheme(b.dataset.theme);
   });
 
-  function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+  function esc(s){return String(s || '').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+  function safeHref(href){
+    try{
+      const url = new URL(href, window.location.href);
+      return /^(https?:)$/i.test(url.protocol) ? url.href : '#';
+    }catch(_e){
+      return '#';
+    }
+  }
   function inline(s){
     s = esc(s);
     s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
     s = s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_m,label,href)=>`<a href="${safeHref(href)}" target="_blank" rel="noopener">${label}</a>`);
     return s;
   }
   function md(src){
@@ -74,22 +95,136 @@
     return out.join('\n');
   }
 
+  function stripFirstHeading(body){
+    return body.replace(/^#\s+.+\n+/,'');
+  }
+
+  function firstParagraph(body){
+    const lines = body.split('\n');
+    for(const line of lines){
+      const trimmed = line.trim();
+      if(!trimmed || /^#/.test(trimmed) || /^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed) || /^\|/.test(trimmed)) continue;
+      return trimmed;
+    }
+    return '';
+  }
+
+  function excerptItems(body, limit){
+    const items = [];
+    const lines = body.split('\n');
+    for(const line of lines){
+      const trimmed = line.trim();
+      if(/^[-*]\s+/.test(trimmed)) items.push(trimmed.replace(/^[-*]\s+/,''));
+      if(/^\d+\.\s+/.test(trimmed)) items.push(trimmed.replace(/^\d+\.\s+/,''));
+      if(items.length >= limit) break;
+    }
+    return items;
+  }
+
+  function wordCount(body){
+    return body.replace(/[#*`|[\]()]/g,' ').split(/\s+/).filter(Boolean).length;
+  }
+
+  function sectionById(id){
+    return D.sections.find(x=>x.id===id) || D.sections[0];
+  }
+
+  function groupSections(filter){
+    const q = (filter || '').toLowerCase().trim();
+    const groups = new Map();
+    D.sections.forEach(section=>{
+      const haystack = `${section.title}\n${section.summary || ''}\n${section.body}`.toLowerCase();
+      if(q && !haystack.includes(q)) return;
+      const key = section.group || 'Разделы';
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(section);
+    });
+    return groups;
+  }
+
   function renderNav(filter){
-    const q = (filter||'').toLowerCase().trim();
     navEl.innerHTML = '';
-    D.sections.forEach(s=>{
-      if(q && !(s.title.toLowerCase().includes(q) || s.body.toLowerCase().includes(q))) return;
-      const a = document.createElement('a');
-      a.href = '#'+s.id; a.textContent = s.title; a.dataset.id = s.id;
-      if(location.hash.slice(1) === s.id) a.classList.add('active');
-      navEl.appendChild(a);
+    const groups = groupSections(filter);
+    if(!groups.size){
+      navEl.innerHTML = '<div class="nav-empty">Ничего не найдено. Уточните термин или откройте обзор.</div>';
+      return;
+    }
+    groups.forEach((sections, title)=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'nav-group';
+      const label = document.createElement('div');
+      label.className = 'nav-group-title';
+      label.textContent = title;
+      wrap.appendChild(label);
+      sections.forEach(s=>{
+        const a = document.createElement('a');
+        a.href = '#'+s.id;
+        a.textContent = s.title;
+        a.dataset.id = s.id;
+        if(location.hash.slice(1) === s.id) a.classList.add('active');
+        wrap.appendChild(a);
+      });
+      navEl.appendChild(wrap);
     });
   }
+
+  function renderOverviewCards(){
+    return FEATURED_OVERVIEW_IDS.map(id=>{
+      const section = sectionById(id);
+      return `<a class="overview-card" href="#${section.id}">
+        <div class="overview-label">${esc(section.group || 'Раздел')}</div>
+        <h2 class="overview-title">${esc(section.title)}</h2>
+        <div class="overview-note">${esc(section.summary || firstParagraph(section.body))}</div>
+      </a>`;
+    }).join('');
+  }
+
+  function renderSignalPills(items){
+    if(!items.length) return '';
+    return `<div class="signal-card">
+      <div class="meta-label">Быстрые ориентиры</div>
+      <div class="signal-list">${items.map(item=>`<span class="signal-pill">${inline(item)}</span>`).join('')}</div>
+    </div>`;
+  }
+
   function renderView(){
     const id = location.hash.slice(1) || D.sections[0].id;
-    const s = D.sections.find(x=>x.id===id) || D.sections[0];
-    crumbEl.textContent = s.title;
-    viewEl.innerHTML = md(s.body);
+    const s = sectionById(id);
+    const summary = s.summary || firstParagraph(s.body);
+    const quickItems = excerptItems(s.body, 4);
+    const content = md(stripFirstHeading(s.body));
+    const words = wordCount(s.body);
+    crumbEl.textContent = s.group || 'Политика';
+    if(sectionLeadEl) sectionLeadEl.textContent = summary;
+    if(sectionStatsEl) sectionStatsEl.textContent = `${quickItems.length || 1} ориентира`;
+    viewEl.innerHTML = `
+      <div class="section-shell">
+        <section class="section-header">
+          <div class="section-eyebrow">${esc(s.id)}</div>
+          <h1 class="section-title">${esc(s.title)}</h1>
+          <p class="section-summary">${esc(summary)}</p>
+        </section>
+        <section class="meta-grid">
+          <div class="meta-card">
+            <div class="meta-label">Контур</div>
+            <div class="meta-value">${esc(s.group || 'Политика')}</div>
+            <div class="meta-note">Раздел встроен в единый AV DS editorial shell.</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Объём</div>
+            <div class="meta-value">${words}</div>
+            <div class="meta-note">Слов в текущем разделе без учёта экспортных действий.</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Актуальность</div>
+            <div class="meta-value">v${esc(D.meta.version)}</div>
+            <div class="meta-note">${esc(D.meta.updated)} · ${esc(D.meta.status)}</div>
+          </div>
+        </section>
+        ${s.id === 'overview' ? `<section class="overview-grid">${renderOverviewCards()}</section>` : ''}
+        ${renderSignalPills(quickItems)}
+        <article class="doc-body">${content}</article>
+      </div>`;
     navEl.querySelectorAll('a').forEach(a=>a.classList.toggle('active', a.dataset.id===s.id));
     document.title = `${s.title} \u2014 ${D.meta.title}`;
   }
