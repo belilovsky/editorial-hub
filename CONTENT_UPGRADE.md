@@ -27,13 +27,15 @@ Source reviewed: `/Users/belilovsky/Downloads/__1.md` (1963 lines, 206 KB).
 - Added health/science/statistics evidence hierarchy.
 - Added RU/KZ workflow, source-of-truth language, quote translation, glossary and corrections parity.
 - Added accessibility, methodology, archive/changelog and reusable templates.
+- Added public-request workflow without inventing a fake inbox.
+- Added Kazakh short policy summary, daily editorial checklists and wording examples.
 
 ## Code/UI fixes made during the content pass
 
 - Fixed a data/render contract mismatch: `app.js` expected `section.title`, while `data.js` did not provide it.
 - Added a defensive `titleOf(section)` fallback so future missing titles do not render as `undefined`.
 - Removed duplicate navigation labels caused by a CSS `::before` label plus the real `.nav-link-text`.
-- Bumped static asset query strings to `20260524d`.
+- Bumped static asset query strings to `20260524f`.
 
 ## Needs external validation
 

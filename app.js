@@ -10,7 +10,7 @@
   const searchEl = document.getElementById('search');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
-  const FEATURED_OVERVIEW_IDS = ['sources', 'factcheck', 'ai-policy', 'corrections', 'elections', 'bilingual-workflow'];
+  const FEATURED_OVERVIEW_IDS = ['sources', 'factcheck', 'ai-policy', 'corrections', 'public-requests', 'editorial-checklists'];
 
   function getStoredTheme(){
     try { return localStorage.getItem('eh-theme'); }
