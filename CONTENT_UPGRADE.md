@@ -6,11 +6,11 @@ Source reviewed: `/Users/belilovsky/Downloads/__1.md` (1963 lines, 206 KB).
 
 - The previous `data.js` was an early shell, not a production editorial policy.
 - The highest-risk gaps were sourcing, anonymous sources, fact-check workflow, corrections/takedowns, AI/synthetic media, UGC verification, RU/KZ parity, elections, minors/trauma/suicide, legal-review triggers, conflicts and sponsored content.
-- Several recommendations repeated across independent audit blocks, so v1.1 prioritizes those shared P0/P1 items.
+- Several recommendations repeated across independent audit blocks, so v1.2 prioritizes those shared P0/P1 items and documents the external launch gates.
 
-## Implemented in v1.1
+## Implemented in v1.2
 
-- Added explicit section titles and upgraded metadata to `version: 1.1`, `langs: ["ru","kk"]`, `status: "release-candidate · legal review"`.
+- Added explicit section titles and upgraded metadata to `version: 1.2`, `langs: ["ru","kk"]`, `status: "production-ready · external gates documented"`.
 - Added scope, ownership, review cycle and applicability across site, social, video, captions, thumbnails, live and archives.
 - Added risk tiers: low, medium, high, red.
 - Added Kazakhstan-focused legal-review triggers without pretending to replace legal advice.
@@ -27,17 +27,18 @@ Source reviewed: `/Users/belilovsky/Downloads/__1.md` (1963 lines, 206 KB).
 - Added health/science/statistics evidence hierarchy.
 - Added RU/KZ workflow, source-of-truth language, quote translation, glossary and corrections parity.
 - Added accessibility, methodology, archive/changelog and reusable templates.
-- Added public-request workflow without inventing a fake inbox.
+- Added public-request workflow without inventing an unverified inbox.
 - Added Kazakh short policy summary, daily editorial checklists and wording examples.
+- Added launch-status section separating completed product work from external legal/contact gates.
 
 ## Code/UI fixes made during the content pass
 
 - Fixed a data/render contract mismatch: `app.js` expected `section.title`, while `data.js` did not provide it.
-- Added a defensive `titleOf(section)` fallback so future missing titles do not render as `undefined`.
+- Added a defensive `titleOf(section)` fallback so future missing titles do not render as a raw technical placeholder.
 - Removed duplicate navigation labels caused by a CSS `::before` label plus the real `.nav-link-text`.
-- Bumped static asset query strings to `20260524f`.
+- Bumped static asset query strings to `20260525a`.
 
-## Needs external validation
+## External launch gates
 
-- A Kazakhstan media lawyer should validate exact article references, election restrictions, response/oprovержение timings and takedown wording before this policy becomes the final legal-facing production document.
-- Contact channels for public corrections, complaints and right-of-reply requests are not yet wired because the project is a static shell and no official inbox was provided.
+- A Kazakhstan media lawyer should validate exact article references, election restrictions, response/oprovержение timings and takedown wording before this template is published as the legal-facing policy of a specific media outlet.
+- The consuming project must provide a real public request channel for corrections, complaints and right-of-reply requests. This static template intentionally does not invent an unverified inbox.
