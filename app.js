@@ -8,8 +8,14 @@
   const themeRow = document.getElementById('themeRow');
   const exportBtn = document.getElementById('exportMd');
   const searchEl = document.getElementById('search');
+  const themeColorEl = document.getElementById('themeColor');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
+  const THEME_COLORS = {
+    light: '#f3f5f9',
+    dark: '#0e1014',
+    'golden-paper': '#f4ecd9'
+  };
   const FEATURED_OVERVIEW_IDS = ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'];
 
   function getStoredTheme(){
@@ -25,6 +31,7 @@
   function applyTheme(t){
     if(!THEMES.includes(t)) t = 'light';
     html.setAttribute('data-theme', t);
+    if(themeColorEl) themeColorEl.setAttribute('content', THEME_COLORS[t] || THEME_COLORS.light);
     setStoredTheme(t);
     if(themeRow) themeRow.querySelectorAll('button').forEach(b=>{
       b.setAttribute('aria-pressed', b.dataset.theme === t ? 'true' : 'false');
@@ -37,19 +44,27 @@
   });
 
   function esc(s){return String(s || '').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+  function attr(s){return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   function safeHref(href){
+    const raw = String(href || '').trim();
+    if(/^#[A-Za-z0-9_-]+$/.test(raw)) return raw;
     try{
-      const url = new URL(href, window.location.href);
+      const url = new URL(raw, window.location.href);
       return /^(https?:)$/i.test(url.protocol) ? url.href : '#';
     }catch(_e){
       return '#';
     }
   }
+  function link(label, href){
+    const safe = safeHref(href);
+    const external = /^https?:/i.test(safe);
+    return `<a href="${attr(safe)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}</a>`;
+  }
   function inline(s){
     s = esc(s);
     s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
     s = s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_m,label,href)=>`<a href="${safeHref(href)}" target="_blank" rel="noopener">${label}</a>`);
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_m,label,href)=>link(label, href));
     return s;
   }
   function md(src){
@@ -73,7 +88,7 @@
         let items=[];
         while(i<lines.length && /^[-*]\s+\[[ x]\]\s+/.test(lines[i])){
           const mm = lines[i].match(/^[-*]\s+\[([ x])\]\s+(.*)$/);
-          items.push(`<li><input type="checkbox" disabled aria-label="${esc(mm[2])}" ${mm[1]==='x'?'checked':''}> ${inline(mm[2])}</li>`); i++;
+          items.push(`<li><input type="checkbox" disabled aria-label="${attr(mm[2])}" ${mm[1]==='x'?'checked':''}> ${inline(mm[2])}</li>`); i++;
         }
         out.push('<ul class="checklist">'+items.join('')+'</ul>'); continue;
       }
@@ -171,7 +186,7 @@
         a.dataset.label = title;
         if(location.hash.slice(1) === s.id){
           a.classList.add('active');
-          a.setAttribute('aria-current', 'true');
+          a.setAttribute('aria-current', 'page');
         }
         wrap.appendChild(a);
       });
@@ -183,7 +198,7 @@
     return FEATURED_OVERVIEW_IDS.map(id=>{
       const section = sectionById(id);
       const title = titleOf(section);
-      return `<a class="overview-card" href="#${section.id}">
+      return `<a class="overview-card" href="#${attr(section.id)}">
         <div class="overview-label">${esc(section.group || 'Раздел')}</div>
         <h2 class="overview-title">${esc(title)}</h2>
         <div class="overview-note">${esc(section.summary || firstParagraph(section.body))}</div>
@@ -241,7 +256,7 @@
     navEl.querySelectorAll('a').forEach(a=>{
       const active = a.dataset.id === s.id;
       a.classList.toggle('active', active);
-      if(active) a.setAttribute('aria-current', 'true');
+      if(active) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
     document.title = `${title} \u2014 ${D.meta.title}`;

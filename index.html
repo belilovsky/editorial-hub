@@ -3,13 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Editorial Hub — Редакционная политика</title>
-<meta name="description" content="Editorial Hub — редакционная политика для мультиплатформенных контент-проектов: источники, фактчек, AI, UGC, RU/KZ и corrections">
-<meta name="theme-color" content="#f3f5f9">
+<title>Editorial Hub — production-ready редакционная политика</title>
+<meta name="description" content="Editorial Hub — production-ready редакционная политика для мультиплатформенных контент-проектов: источники, фактчек, AI, UGC, RU/KZ, corrections и public-request workflow.">
+<meta name="robots" content="index,follow">
+<meta id="themeColor" name="theme-color" content="#f3f5f9">
+<link rel="canonical" href="https://edpol.qdev.run/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_KZ">
+<meta property="og:site_name" content="Editorial Hub">
+<meta property="og:title" content="Editorial Hub — production-ready редакционная политика">
+<meta property="og:description" content="Источники, фактчек, AI, UGC, RU/KZ workflow, corrections и публичные обращения для редакций в Казахстане.">
+<meta property="og:url" content="https://edpol.qdev.run/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Editorial Hub — production-ready редакционная политика">
+<meta name="twitter:description" content="Рабочий policy hub для мультиплатформенной редакции: фактчек, AI, UGC, corrections и RU/KZ parity.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23245bff'/%3E%3Ctext x='32' y='39' font-size='22' text-anchor='middle' font-family='Arial' font-weight='700' fill='white'%3EEH%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./styles.css?v=20260525a">
+<link rel="stylesheet" href="./styles.css?v=20260527a">
 </head>
 <body>
 <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -31,13 +43,13 @@
   <nav id="nav" aria-label="Разделы политики"></nav>
   <div class="sidebar-foot">
     <div class="theme-row" id="themeRow">
-      <button data-theme="light" title="Светлая тема">Светлая</button>
-      <button data-theme="dark" title="Тёмная тема">Тёмная</button>
-      <button data-theme="golden-paper" title="Печатная тема">Печатная</button>
+      <button type="button" data-theme="light" title="Светлая тема" aria-label="Включить светлую тему">Светлая</button>
+      <button type="button" data-theme="dark" title="Тёмная тема" aria-label="Включить тёмную тему">Тёмная</button>
+      <button type="button" data-theme="golden-paper" title="Печатная тема" aria-label="Включить печатную тему">Печатная</button>
     </div>
     <div class="foot-row">
-      <a id="exportMd" href="#" title="Экспорт раздела. Shift+клик — всё целиком">Markdown</a>
-      <a href="https://github.com/belilovsky/editorial-hub" target="_blank" rel="noopener">GitHub</a>
+      <button id="exportMd" type="button" title="Экспорт раздела. Shift+клик — всё целиком" aria-label="Экспортировать текущий раздел в Markdown">Markdown</button>
+      <a href="https://github.com/belilovsky/editorial-hub" target="_blank" rel="noopener noreferrer" aria-label="Открыть репозиторий Editorial Hub на GitHub">GitHub</a>
     </div>
     <div class="foot-meta">AV DS editorial shell · editorial-hub v1.2</div>
   </div>
@@ -50,12 +62,12 @@
     </div>
     <div class="top-actions">
       <span class="chip" id="sectionStats" title="Сводка раздела">10 разделов</span>
-      <a class="chip" href="https://github.com/belilovsky/editorial-hub" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="chip" href="https://github.com/belilovsky/editorial-hub" target="_blank" rel="noopener noreferrer" aria-label="Открыть репозиторий Editorial Hub на GitHub">GitHub ↗</a>
     </div>
   </header>
   <section id="view"></section>
 </main>
-<script src="./data.js?v=20260525a"></script>
-<script src="./app.js?v=20260525a"></script>
+<script src="./data.js?v=20260527a"></script>
+<script src="./app.js?v=20260527a"></script>
 </body>
 </html>
