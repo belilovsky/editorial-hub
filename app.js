@@ -11,11 +11,6 @@
   const themeColorEl = document.getElementById('themeColor');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
-  const THEME_COLORS = {
-    light: '#f3f5f9',
-    dark: '#0e1014',
-    'golden-paper': '#f4ecd9'
-  };
   const FEATURED_OVERVIEW_IDS = ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'];
 
   function getStoredTheme(){
@@ -31,7 +26,7 @@
   function applyTheme(t){
     if(!THEMES.includes(t)) t = 'light';
     html.setAttribute('data-theme', t);
-    if(themeColorEl) themeColorEl.setAttribute('content', THEME_COLORS[t] || THEME_COLORS.light);
+    if(themeColorEl) themeColorEl.setAttribute('content', getComputedStyle(html).getPropertyValue('--background').trim());
     setStoredTheme(t);
     if(themeRow) themeRow.querySelectorAll('button').forEach(b=>{
       b.setAttribute('aria-pressed', b.dataset.theme === t ? 'true' : 'false');

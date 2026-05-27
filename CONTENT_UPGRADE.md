@@ -36,8 +36,9 @@ Source reviewed: `/Users/belilovsky/Downloads/__1.md` (1963 lines, 206 KB).
 - Fixed a data/render contract mismatch: `app.js` expected `section.title`, while `data.js` did not provide it.
 - Added a defensive `titleOf(section)` fallback so future missing titles do not render as a raw technical placeholder.
 - Removed duplicate navigation labels caused by a CSS `::before` label plus the real `.nav-link-text`.
-- Bumped static asset query strings to `20260527a`.
+- Bumped static asset query strings to `20260527b`.
 - Added production metadata, favicon, canonical/OpenGraph/Twitter tags, safer attribute escaping, standard `aria-current="page"` and visible focus states.
+- Re-aligned the shell with AV DS 4 tokens, font bridge, HSL theme palettes, compact radii, focus ring, motion and print contracts.
 
 ## External launch gates
 
