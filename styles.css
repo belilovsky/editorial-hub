@@ -68,7 +68,8 @@ code,pre,kbd{font-family:var(--font-mono)}
 .theme-row button[aria-pressed="true"]{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
 .foot-row{display:flex;gap:6px}
 .foot-row a,.foot-row button{flex:1;background:var(--background);border:1px solid var(--border);color:var(--foreground);padding:8px 8px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:inherit;text-align:center}
-.foot-meta{color:var(--muted-foreground);font-size:11px;letter-spacing:0;text-align:center;padding-top:2px}
+.foot-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;color:var(--muted-foreground);font-size:11px;letter-spacing:0;text-align:center;padding-top:2px}
+.foot-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:var(--secondary);border:1px solid color-mix(in srgb,var(--primary) 16%,var(--border));color:var(--primary);font-size:10px;font-weight:600;line-height:1.2}
 #main{padding:24px 32px 40px;max-width:1240px;width:100%;min-width:0}
 #topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
 .topbar-copy{display:flex;flex-direction:column;gap:6px}
