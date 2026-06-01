@@ -1,10 +1,10 @@
 # editorial-hub
 
-Editorial Hub — статический editorial shell для редакционной политики мультиплатформенных контент-проектов (RU/KZ, AI-policy).
+Editorial Hub — статический сайт редакционной политики для мультиплатформенных контент-проектов (RU/KZ, AI-policy).
 
 ## Что внутри
 
-- AV DS-подобный документный интерфейс со светлой темой по умолчанию
+- Спокойный документный интерфейс со светлой темой по умолчанию
 - Группировка разделов, поиск по правилам и быстрый экспорт в Markdown
 - Статические данные без сборки и без backend-зависимостей
 
@@ -23,7 +23,3 @@ python3 -m http.server 8080
 - `app.js` — рендеринг, навигация, темы, экспорт
 - `data.js` — контент разделов и метаданные
 - `CONTENT_UPGRADE.md` — карта контентного апгрейда v1.2 по результатам внешнего аудита
-
-## Platform control-plane
-
-Shell читает public-safe manifest `https://platform.qdev.run/catalog/inventory/ecosystem.generated.json` для compact-индикатора product packages / policy hooks / pipeline stages. Если manifest недоступен из-за сети или CORS, используется локальный fallback из `data.js`; интерфейс не должен ломаться.

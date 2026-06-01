@@ -38,7 +38,7 @@ Source reviewed: `/Users/belilovsky/Downloads/__1.md` (1963 lines, 206 KB).
 - Removed duplicate navigation labels caused by a CSS `::before` label plus the real `.nav-link-text`.
 - Bumped static asset query strings to `20260527b`.
 - Added production metadata, favicon, canonical/OpenGraph/Twitter tags, safer attribute escaping, standard `aria-current="page"` and visible focus states.
-- Re-aligned the shell with AV DS 4 tokens, font bridge, HSL theme palettes, compact radii, focus ring, motion and print contracts.
+- Re-aligned the shell with a compact document layout, stable theme palettes, focus ring, motion and print contracts.
 
 ## External launch gates
 

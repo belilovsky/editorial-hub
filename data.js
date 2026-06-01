@@ -1,23 +1,10 @@
 window.EH_DATA = {
   meta: {
     title: "Editorial Hub",
-    version: "1.2",
+    version: "1.3",
     langs: ["ru", "kk"],
-    updated: "24.05.2026",
-    status: "production-ready · external gates documented"
-  },
-  controlPlane: {
-    manifestUrl: "https://platform.qdev.run/catalog/inventory/ecosystem.generated.json",
-    localStatus: "external-next-gate",
-    targetId: "content_admins",
-    productPackages: ["gov_content_studio", "media_compliance_kit", "antifake_statement_intelligence"],
-    policyHooks: ["editorial_policy", "ai_policy", "legal_review", "corrections_workflow", "source_verification"],
-    pipelineStages: ["policy_check", "human_review", "publish", "evidence_log"],
-    fallbackCounts: {
-      productPackages: 3,
-      policyHooks: 5,
-      pipelineStages: 4
-    }
+    updated: "01.06.2026",
+    status: "production-ready · policy-only shell"
   },
   sections: [
     {
@@ -25,11 +12,11 @@ window.EH_DATA = {
       title: "Обзор",
       group: "Основа",
       summary: "Политика стала рабочим контуром: источники, фактчек, AI, UGC, правки, выборы, RU/KZ и юридические триггеры.",
-      body: `# Editorial Hub v1.2
+      body: `# Editorial Hub v1.3
 
 Editorial Hub — единая редакционная политика для мультиплатформенных контент-проектов в Казахстане: сайт, Telegram, Instagram, YouTube, TikTok, рассылки, push, карточки, captions, thumbnails, shorts/reels, live и архивные обновления.
 
-Версия v1.2 закрывает критические пробелы аудита: вместо набора принципов теперь есть процедуры, уровни риска, правила источников, AI, UGC, исправлений, выборов, sensitive coverage, RU/KZ workflow, публичные обращения, примеры и редакционные чек-листы.
+Версия v1.3 сохраняет закрытые пробелы аудита и выносит Editorial Hub в самостоятельный policy-only shell: вместо набора принципов теперь есть процедуры, уровни риска, правила источников, AI, UGC, исправлений, выборов, sensitive coverage, RU/KZ workflow, публичные обращения, примеры и редакционные чек-листы.
 
 - 32 раздела вместо короткого прототипа
 - Явные P0-правила для источников, анонимности, right of reply, фактчека и evidence file
@@ -857,7 +844,7 @@ AI использовался для [...]. Факты, цитаты, источ
 
 Используйте кнопку Markdown в сайдбаре, чтобы скачать текущий раздел в .md.
 
-Для выгрузки всей политики целиком: откройте раздел и нажмите Markdown с зажатым Shift. Будет выгружен единый файл editorial-hub-v1.2.md со всеми разделами.
+Для выгрузки всей политики целиком: откройте раздел и нажмите Markdown с зажатым Shift. Будет выгружен единый файл editorial-hub-v1.3.md со всеми разделами.
 
 Перед публикацией финальной версии сохраните export в редакционном архиве и приложите changelog: какие разделы менялись, кто согласовал, какие legal notes остались открытыми.`
     }

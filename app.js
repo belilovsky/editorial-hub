@@ -5,15 +5,13 @@
   const crumbEl = document.getElementById('crumb');
   const sectionLeadEl = document.getElementById('sectionLead');
   const sectionStatsEl = document.getElementById('sectionStats');
-  const controlPlaneEl = document.getElementById('controlPlaneStats');
   const themeRow = document.getElementById('themeRow');
   const exportBtn = document.getElementById('exportMd');
   const searchEl = document.getElementById('search');
   const themeColorEl = document.getElementById('themeColor');
   const html = document.documentElement;
-  const THEMES = ['light','dark','golden-paper'];
+  const THEMES = ['light','dark'];
   const FEATURED_OVERVIEW_IDS = ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'];
-  const controlPlane = D.controlPlane || {};
 
   function getStoredTheme(){
     try { return localStorage.getItem('eh-theme'); }
@@ -143,50 +141,6 @@
     return body.replace(/[#*`|[\]()]/g,' ').split(/\s+/).filter(Boolean).length;
   }
 
-  function setControlPlaneChip(label, title){
-    if(!controlPlaneEl) return;
-    controlPlaneEl.textContent = label;
-    controlPlaneEl.title = title;
-  }
-
-  function arrayCount(payload, key, ids){
-    const registry = payload && payload[key];
-    if(!registry || !Array.isArray(ids)) return 0;
-    return ids.filter(id=>Object.prototype.hasOwnProperty.call(registry, id)).length;
-  }
-
-  function applyControlPlaneManifest(payload, sourceLabel){
-    const packages = arrayCount(payload, 'product_packages', controlPlane.productPackages);
-    const hooks = arrayCount(payload, 'policy_hooks', controlPlane.policyHooks);
-    const stages = arrayCount(payload, 'content_pipeline', controlPlane.pipelineStages);
-    const adoption = payload?.consumer_adoption_targets?.[controlPlane.targetId];
-    const status = adoption?.status || controlPlane.localStatus || 'local';
-    setControlPlaneChip(
-      `Control plane: ${packages}/${hooks}/${stages}`,
-      `${sourceLabel}: ${packages} packages, ${hooks} policy hooks, ${stages} pipeline stages · ${status}`
-    );
-  }
-
-  function loadControlPlane(){
-    const fallback = {
-      product_packages: Object.fromEntries((controlPlane.productPackages || []).map(id=>[id, {}])),
-      policy_hooks: Object.fromEntries((controlPlane.policyHooks || []).map(id=>[id, {}])),
-      content_pipeline: Object.fromEntries((controlPlane.pipelineStages || []).map(id=>[id, {}])),
-      consumer_adoption_targets: {
-        [controlPlane.targetId || 'content_admins']: {status: controlPlane.localStatus || 'local'}
-      }
-    };
-    applyControlPlaneManifest(fallback, 'fallback');
-    if(!controlPlane.manifestUrl || !window.fetch) return;
-    fetch(controlPlane.manifestUrl, {cache: 'no-store'})
-      .then(response=>{
-        if(!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-      })
-      .then(payload=>applyControlPlaneManifest(payload, 'platform.qdev.run'))
-      .catch(()=>applyControlPlaneManifest(fallback, 'fallback'));
-  }
-
   function sectionById(id){
     return D.sections.find(x=>x.id===id) || D.sections[0];
   }
@@ -277,7 +231,7 @@
           <div class="meta-card">
             <div class="meta-label">Контур</div>
             <div class="meta-value">${esc(s.group || 'Политика')}</div>
-            <div class="meta-note">Раздел встроен в единый AV DS editorial shell.</div>
+            <div class="meta-note">Раздел входит в единую редакционную политику и экспортируется отдельно.</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">Объём</div>
@@ -325,6 +279,5 @@
   window.addEventListener('hashchange', ()=>{ renderView(); renderNav(searchEl ? searchEl.value : ''); window.scrollTo(0,0); });
 
   renderNav('');
-  loadControlPlane();
   if(!location.hash) location.hash = D.sections[0].id; else renderView();
 })();
