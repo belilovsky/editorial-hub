@@ -6,11 +6,12 @@ Source reviewed: `/Users/belilovsky/Downloads/__1.md` (1963 lines, 206 KB).
 
 - The previous `data.js` was an early shell, not a production editorial policy.
 - The highest-risk gaps were sourcing, anonymous sources, fact-check workflow, corrections/takedowns, AI/synthetic media, UGC verification, RU/KZ parity, elections, minors/trauma/suicide, legal-review triggers, conflicts and sponsored content.
-- Several recommendations repeated across independent audit blocks, so v1.2 prioritizes those shared P0/P1 items and documents the external launch gates.
+- Several recommendations repeated across independent audit blocks, so the first production pass prioritized those shared P0/P1 items and documented the external launch gates.
 
-## Implemented in v1.2
+## Implemented in the first production pass
 
 - Added explicit section titles and upgraded metadata to `version: 1.2`, `langs: ["ru","kk"]`, `status: "production-ready · external gates documented"`.
+- Subsequent shell cleanup removed AV DS/platform coupling and promoted the public site to a standalone policy-only shell (`v1.3`).
 - Added scope, ownership, review cycle and applicability across site, social, video, captions, thumbnails, live and archives.
 - Added risk tiers: low, medium, high, red.
 - Added Kazakhstan-focused legal-review triggers without pretending to replace legal advice.
