@@ -6,6 +6,19 @@ window.EH_DATA = {
     updated: "24.05.2026",
     status: "production-ready · external gates documented"
   },
+  controlPlane: {
+    manifestUrl: "https://platform.qdev.run/catalog/inventory/ecosystem.generated.json",
+    localStatus: "external-next-gate",
+    targetId: "content_admins",
+    productPackages: ["gov_content_studio", "media_compliance_kit", "antifake_statement_intelligence"],
+    policyHooks: ["editorial_policy", "ai_policy", "legal_review", "corrections_workflow", "source_verification"],
+    pipelineStages: ["policy_check", "human_review", "publish", "evidence_log"],
+    fallbackCounts: {
+      productPackages: 3,
+      policyHooks: 5,
+      pipelineStages: 4
+    }
+  },
   sections: [
     {
       id: "overview",
