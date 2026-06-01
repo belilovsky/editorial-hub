@@ -10,7 +10,7 @@
   const searchEl = document.getElementById('search');
   const themeColorEl = document.getElementById('themeColor');
   const html = document.documentElement;
-  const THEMES = ['light','dark'];
+  const THEMES = ['light','dark','golden-paper'];
   const FEATURED_OVERVIEW_IDS = ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'];
 
   function getStoredTheme(){
