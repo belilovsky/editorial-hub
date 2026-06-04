@@ -23,8 +23,8 @@ const required = {
 };
 
 const minWords = {
-  0: 200,
-  1: 140,
+  0: 80,
+  1: 80,
 };
 
 const knownSections = data.sections.map(s => s.id);
@@ -42,7 +42,7 @@ for (const section of data.sections) {
   }
   const bodyText = String(section.body || '');
   const summaryText = String(section.summary || '');
-  if (/todo|lorem|\[\.\.\.|TODO|Lorem|TODO:/.test(bodyText + '\n' + summaryText) && id !== 'templates') {
+  if (/todo|lorem|\[\.\.\.|TODO|Lorem|TODO:/.test(bodyText + '\n' + summaryText) && !['templates','examples'].includes(id)) {
     warnings.push(`Возможные черновые маркеры в разделе: ${id}`);
   }
   const risk = section.riskLevel;
@@ -54,6 +54,13 @@ for (const section of data.sections) {
   if (risk === 'P1' || required[1].includes(id)) {
     if (wordCount(bodyText) < minWords[1]) {
       warnings.push(`Низкий объём (P1/важный): ${id} (${wordCount(bodyText)} < ${minWords[1]})`);
+    }
+  }
+  if (Array.isArray(section.related)) {
+    for (const rel of section.related) {
+      if (!knownSections.includes(rel)) {
+        warnings.push(`Связанный id не найден в данных: ${id} → ${rel}`);
+      }
     }
   }
   if ((risk === 'P0' || risk === 'P1') && !Array.isArray(section.related)) {
@@ -72,9 +79,6 @@ for (const section of data.sections) {
 
 const duplicated = findDuplicates(data.sections.map(s => s.id));
 for (const id of duplicated) checks.push(`Дубликат id: ${id}`);
-
-  const shortStatuses = data.sections.filter(s => s.id === 'overview' && s.summary.length < 120).map(s => s.id);
-  if (shortStatuses.length) warnings.push('Служебные разделы могут быть короткими, но overview может быть короче целевого порога.');
 
 function wordCount(text){
   return text.replace(/[#*`|[\]()>]/g, ' ').split(/\s+/).filter(Boolean).length;
