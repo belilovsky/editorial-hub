@@ -7,11 +7,51 @@
   const sectionStatsEl = document.getElementById('sectionStats');
   const themeRow = document.getElementById('themeRow');
   const exportBtn = document.getElementById('exportMd');
+  const exportAllBtn = document.getElementById('exportAllMd');
   const searchEl = document.getElementById('search');
+  const clearSearchBtn = document.getElementById('clearSearch');
   const themeColorEl = document.getElementById('themeColor');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
-  const FEATURED_OVERVIEW_IDS = ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'];
+  const STATUS_LABELS = {
+    'template-ready': 'готово как шаблон',
+    'requires-review': 'требует проверки',
+    draft: 'черновик'
+  };
+  const ROLE_LABELS = {
+    'editorial-team': 'редакционная группа',
+    'editorial-director': 'главный редактор',
+    'editorial-lead': 'руководитель редакции',
+    'senior-editor': 'старший редактор',
+    legal: 'юрист',
+    'editor-reporter': 'редактор или корреспондент',
+    'editorial-ops': 'редакционные операции'
+  };
+  const REVIEW_LABELS = {
+    quarterly: 'ежеквартально',
+    'launch-critical': 'перед запуском',
+    monthly: 'ежемесячно',
+    'as-needed': 'по необходимости',
+    weekly: 'еженедельно'
+  };
+
+  function normalizeSection(section){
+    return {
+      id: section && section.id ? section.id : '',
+      featured: !!(section && section.featured),
+      title: section && section.title ? section.title : titleOf(section),
+      group: section && section.group ? section.group : 'Разделы',
+      summary: section && section.summary ? section.summary : firstParagraph(section && section.body || ''),
+      body: section && section.body ? section.body : '',
+      riskLevel: section && section.riskLevel ? section.riskLevel : 'P1',
+      contentStatus: section && section.contentStatus ? section.contentStatus : 'template-ready',
+      ownerRole: section && section.ownerRole ? section.ownerRole : 'editorial-team',
+      reviewCycle: section && section.reviewCycle ? section.reviewCycle : 'не определён',
+      requiresLegal: !!section && section.requiresLegal,
+      publicFacing: section && typeof section.publicFacing === 'boolean' ? section.publicFacing : true,
+      related: Array.isArray(section && section.related) ? section.related : []
+    };
+  }
 
   function getStoredTheme(){
     try { return localStorage.getItem('eh-theme'); }
@@ -50,6 +90,20 @@
       return '#';
     }
   }
+  function formatStatus(value){
+    return STATUS_LABELS[value] || value || 'не определён';
+  }
+  function formatRole(value){
+    return ROLE_LABELS[value] || value || 'не определён';
+  }
+  function formatReviewCycle(value){
+    return REVIEW_LABELS[value] || value || 'не определён';
+  }
+  function formatMetaStatus(value){
+    return String(value || '')
+      .replace('template-ready', 'готово как шаблон')
+      .replace('requires local legal/contact configuration', 'требует локальной юридической проверки и настройки канала обращений');
+  }
   function link(label, href){
     const safe = safeHref(href);
     const external = /^https?:/i.test(safe);
@@ -62,12 +116,64 @@
     s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_m,label,href)=>link(label, href));
     return s;
   }
-  function md(src){
+  function slugify(value){
+    return String(value || '')
+      .toLowerCase()
+      .replace(/<[^>]*>/g,'')
+      .replace(/[\s_]+/g,'-')
+      .replace(/[^a-zа-я0-9-]/g,'')
+      .replace(/-+/g,'-')
+      .replace(/^-|-$/g,'');
+  }
+
+  function parseMarkdown(src){
     const lines = src.split('\n');
-    let out = [], i = 0;
+    const headings = [];
+    const rendered = [];
+    let i = 0;
     while(i < lines.length){
-      const l = lines[i]; let m;
-      if(m = l.match(/^(#{1,6})\s+(.*)$/)){ const n=m[1].length; out.push(`<h${n}>${inline(m[2])}</h${n}>`); i++; continue; }
+      const l = lines[i];
+      let m;
+      if(/^>/.test(l)){
+        const calloutMatch = l.match(/^>\s*\[\!([A-ZА-Яa-z]+)\]\s*$/);
+        const calloutType = calloutMatch ? calloutMatch[1].toLowerCase() : '';
+        const raw = [];
+        while(i < lines.length && lines[i].trim().startsWith('>')){
+          raw.push(lines[i].replace(/^>\s?/, ''));
+          i++;
+        }
+        const text = raw.join('\n');
+        if(calloutType){
+          const title = {
+            note: 'Note',
+            warning: 'Warning',
+            tip: 'Tip',
+            danger: 'Risk',
+            info: 'Info'
+          }[calloutType] || 'Note';
+          rendered.push(`<div class="callout callout-${calloutType}">
+            <div class="callout-title">${title}</div>
+            <div class="callout-body">${inline(text).replace(/\n/g,'<br>')}</div>
+          </div>`);
+        } else {
+          rendered.push(`<blockquote>${inline(text).replace(/\n/g,'<br>')}</blockquote>`);
+        }
+        continue;
+      }
+      if((m = l.match(/^(#{1,6})\s+(.*)$/))){
+        const n = m[1].length;
+        const headingText = m[2].trim();
+        const id = slugify(headingText) || `h${n}-${rendered.length}`;
+        headings.push({ level: n, id, text: headingText });
+        rendered.push(`<h${n} id="${attr(id)}">${inline(headingText)}</h${n}>`);
+        i++;
+        continue;
+      }
+      if(m = l.match(/^(\d{3}|---|___)\s*$/)){
+        rendered.push('<hr/>');
+        i++;
+        continue;
+      }
       if(l.startsWith('| ')){
         const rows = [];
         while(i < lines.length && lines[i].startsWith('|')){ rows.push(lines[i]); i++; }
@@ -75,34 +181,50 @@
         if(cells.length>=2 && /^[-: ]+$/.test(cells[1].join(''))){
           let t='<table><thead><tr>'+cells[0].map(c=>`<th>${inline(c)}</th>`).join('')+'</tr></thead><tbody>';
           for(let k=2;k<cells.length;k++) t+='<tr>'+cells[k].map(c=>`<td>${inline(c)}</td>`).join('')+'</tr>';
-          out.push(t+'</tbody></table>');
-        } else { out.push('<pre>'+rows.map(esc).join('\n')+'</pre>'); }
+          rendered.push(t+'</tbody></table>');
+        } else { rendered.push('<pre>'+rows.map(esc).join('\n')+'</pre>'); }
         continue;
       }
-      if(/^[-*]\s+\[[ x]\]\s+/.test(l)){
+      if(/^[-*]\s+\[[ xX]\]\s+/.test(l)){
         let items=[];
-        while(i<lines.length && /^[-*]\s+\[[ x]\]\s+/.test(lines[i])){
-          const mm = lines[i].match(/^[-*]\s+\[([ x])\]\s+(.*)$/);
-          items.push(`<li><input type="checkbox" disabled aria-label="${attr(mm[2])}" ${mm[1]==='x'?'checked':''}> ${inline(mm[2])}</li>`); i++;
+        while(i<lines.length && /^[-*]\s+\[[ xX]\]\s+/.test(lines[i])){
+          const mm = lines[i].match(/^([ \t]*)[-*]\s+\[([ x])\]\s+(.*)$/);
+          const margin = (mm[1] || '').length > 0 ? ` style="margin-left:${Math.min(mm[1].length,8)}ch"` : '';
+          items.push(`<li${margin}><input type="checkbox" disabled aria-label="${attr(mm[3])}" ${mm[2]==='x'?'checked':''}> ${inline(mm[3])}</li>`); i++;
         }
-        out.push('<ul class="checklist">'+items.join('')+'</ul>'); continue;
+        rendered.push('<ul class="checklist">'+items.join('')+'</ul>'); continue;
       }
       if(/^[-*]\s+/.test(l)){
         let items=[];
-        while(i<lines.length && /^[-*]\s+/.test(lines[i])){ items.push('<li>'+inline(lines[i].replace(/^[-*]\s+/,''))+'</li>'); i++; }
-        out.push('<ul>'+items.join('')+'</ul>'); continue;
+        while(i<lines.length && /^[-*]\s+/.test(lines[i])){
+          const mm = lines[i].match(/^([ \t]*)[-*]\s+(.*)$/);
+          const text = inline(mm[2]);
+          const indent = (mm[1] || '').length ? ` style="margin-left:${Math.min(mm[1].length,8)}ch"` : '';
+          items.push(`<li${indent}>${text}</li>`);
+          i++;
+        }
+        rendered.push('<ul>'+items.join('')+'</ul>'); continue;
       }
       if(/^\d+\.\s+/.test(l)){
         let items=[];
         while(i<lines.length && /^\d+\.\s+/.test(lines[i])){ items.push('<li>'+inline(lines[i].replace(/^\d+\.\s+/,''))+'</li>'); i++; }
-        out.push('<ol>'+items.join('')+'</ol>'); continue;
+        rendered.push('<ol>'+items.join('')+'</ol>'); continue;
       }
       if(l.trim()===''){ i++; continue; }
       let para=[l]; i++;
-      while(i<lines.length && lines[i].trim()!=='' && !/^(#|[-*]\s|\d+\.\s|\|)/.test(lines[i])){ para.push(lines[i]); i++; }
-      out.push('<p>'+inline(para.join(' '))+'</p>');
+      while(
+        i<lines.length &&
+        lines[i].trim()!=='' &&
+        !/^\s*(#{1,6}\s+|>\s*|[-*]\s+\[[ xX]\]\s+|[-*]\s+|\d+\.\s+|\|)/.test(lines[i])
+      ){
+        para.push(lines[i]); i++;
+      }
+      rendered.push('<p>'+inline(para.join(' '))+'</p>');
     }
-    return out.join('\n');
+    return {
+      html: rendered.join('\n'),
+      headings
+    };
   }
 
   function stripFirstHeading(body){
@@ -145,13 +267,24 @@
     return D.sections.find(x=>x.id===id) || D.sections[0];
   }
 
+  function getFeaturedSections(){
+    const explicit = D.sections
+      .map(section => normalizeSection(section))
+      .filter(section => section.id && section.featured);
+    if (explicit.length) return explicit;
+    return D.sections
+      .map(section => normalizeSection(section))
+      .filter(section => ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'].includes(section.id));
+  }
+
   function groupSections(filter){
     const q = (filter || '').toLowerCase().trim();
     const groups = new Map();
-    D.sections.forEach(section=>{
+    D.sections.forEach(raw=>{
+      const section = normalizeSection(raw);
       const haystack = `${titleOf(section)}\n${section.summary || ''}\n${section.body}`.toLowerCase();
       if(q && !haystack.includes(q)) return;
-      const key = section.group || 'Разделы';
+      const key = section.group;
       if(!groups.has(key)) groups.set(key, []);
       groups.get(key).push(section);
     });
@@ -168,9 +301,24 @@
     groups.forEach((sections, title)=>{
       const wrap = document.createElement('div');
       wrap.className = 'nav-group';
-      const label = document.createElement('div');
+      const label = document.createElement('button');
+      label.type = 'button';
       label.className = 'nav-group-title';
-      label.textContent = title;
+      label.textContent = `${title} (${sections.length})`;
+      label.setAttribute('aria-expanded', 'true');
+      label.dataset.group = title;
+      const list = document.createElement('div');
+      list.className = 'nav-group-list';
+      const hasSearchFilter = !!((filter || '').trim());
+      if(hasSearchFilter && sections.length > 8){
+        list.classList.add('collapsed');
+        label.setAttribute('aria-expanded', 'false');
+      }
+      label.addEventListener('click', () => {
+        const collapsed = !list.classList.contains('collapsed');
+        list.classList.toggle('collapsed', collapsed);
+        label.setAttribute('aria-expanded', String(!collapsed));
+      });
       wrap.appendChild(label);
       sections.forEach(s=>{
         const title = titleOf(s);
@@ -183,22 +331,21 @@
           a.classList.add('active');
           a.setAttribute('aria-current', 'page');
         }
-        wrap.appendChild(a);
+        list.appendChild(a);
       });
+      wrap.appendChild(list);
       navEl.appendChild(wrap);
     });
   }
 
   function renderOverviewCards(){
-    return FEATURED_OVERVIEW_IDS.map(id=>{
-      const section = sectionById(id);
-      const title = titleOf(section);
+    return getFeaturedSections().map(section=>{
       return `<a class="overview-card" href="#${attr(section.id)}">
         <div class="overview-label">${esc(section.group || 'Раздел')}</div>
-        <h2 class="overview-title">${esc(title)}</h2>
+        <h2 class="overview-title">${esc(titleOf(section))}</h2>
         <div class="overview-note">${esc(section.summary || firstParagraph(section.body))}</div>
       </a>`;
-    }).join('');
+    }).join('') || '';
   }
 
   function renderSignalPills(items){
@@ -209,17 +356,53 @@
     </div>`;
   }
 
+  function sectionStats(section){
+    const words = wordCount(section.body || '');
+    const risk = section.riskLevel || 'P1';
+    const status = formatStatus(section.contentStatus || 'template-ready');
+    return `~${words} слов · ${esc(risk)} · ${esc(status)}`;
+  }
+
+  function renderToc(headings){
+    if(!headings.length) return '';
+      const items = headings.map(item => {
+      const pad = Math.max(0, item.level - 2) * 12;
+      return `<li style="--toc-pad:${pad}px"><a href="#${attr(item.id)}">${esc(item.text)}</a></li>`;
+    }).join('');
+    return `<nav class="toc" aria-label="Оглавление раздела"><h3>Оглавление</h3><ul>${items}</ul></nav>`;
+  }
+
+  function renderRelated(section){
+    if(!section.related.length) return '';
+    const relatedIds = new Set();
+    D.sections.forEach(s => { if(s && s.id) relatedIds.add(s.id); });
+    const links = section.related.map(entry => {
+      const target = String(entry || '').trim();
+      if(!target) return '';
+      if(relatedIds.has(target)){
+        const relSection = sectionById(target);
+        const relTitle = relSection ? titleOf(relSection) : target;
+        return `<li><a href="#${attr(target)}">${esc(relTitle)}</a></li>`;
+      }
+      return `<li>${esc(target)}</li>`;
+    }).filter(Boolean);
+    if(!links.length) return '';
+    return `<section class="related"><h3>Связанные разделы</h3><ul>${links.join('')}</ul></section>`;
+  }
+
   function renderView(){
     const id = location.hash.slice(1) || D.sections[0].id;
-    const s = sectionById(id);
+    const s = normalizeSection(sectionById(id));
     const title = titleOf(s);
     const summary = s.summary || firstParagraph(s.body);
     const quickItems = excerptItems(s.body, 4);
-    const content = md(stripFirstHeading(s.body));
-    const words = wordCount(s.body);
+    const parsed = parseMarkdown(stripFirstHeading(s.body));
+    const content = parsed.html;
+    const toc = renderToc(parsed.headings);
+    const related = renderRelated(s);
     crumbEl.textContent = s.group || 'Политика';
     if(sectionLeadEl) sectionLeadEl.textContent = summary;
-    if(sectionStatsEl) sectionStatsEl.textContent = `${quickItems.length || 1} ориентира`;
+    if(sectionStatsEl) sectionStatsEl.textContent = sectionStats(s);
     viewEl.innerHTML = `
       <div class="section-shell">
         <section class="section-header">
@@ -235,18 +418,27 @@
           </div>
           <div class="meta-card">
             <div class="meta-label">Объём</div>
-            <div class="meta-value">${words}</div>
-            <div class="meta-note">Слов в текущем разделе без учёта экспортных действий.</div>
+            <div class="meta-value">${wordCount(s.body)} слов</div>
+            <div class="meta-note">Оценка для текущей версии, без учёта операций экспорта.</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Риск / статус</div>
+            <div class="meta-value">${esc((s.riskLevel || 'P1') + ' / ' + formatStatus(s.contentStatus || 'template-ready'))}</div>
+            <div class="meta-note">Ответственный: ${esc(formatRole(s.ownerRole))} · Пересмотр: ${esc(formatReviewCycle(s.reviewCycle || 'не определён'))}</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">Актуальность</div>
             <div class="meta-value">v${esc(D.meta.version)}</div>
-            <div class="meta-note">${esc(D.meta.updated)} · ${esc(D.meta.status)}</div>
+            <div class="meta-note">${esc(D.meta.updated)} · ${esc(formatMetaStatus(D.meta.status))}</div>
           </div>
         </section>
         ${s.id === 'overview' ? `<section class="overview-grid">${renderOverviewCards()}</section>` : ''}
         ${renderSignalPills(quickItems)}
-        <article class="doc-body">${content}</article>
+        <article class="doc-body">
+          ${toc}
+          ${content}
+          ${related}
+        </article>
       </div>`;
     navEl.querySelectorAll('a').forEach(a=>{
       const active = a.dataset.id === s.id;
@@ -254,28 +446,59 @@
       if(active) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
+    const activeLink = navEl.querySelector('a.active');
+    if(activeLink && activeLink.scrollIntoView){
+      activeLink.scrollIntoView({ block: 'nearest' });
+    }
     document.title = `${title} \u2014 ${D.meta.title}`;
   }
   function exportMd(e){
     e && e.preventDefault();
-    const all = e && e.shiftKey;
-    let content, name;
-    if(all){
-      content = `# ${D.meta.title} v${D.meta.version}\n\n` + D.sections.map(s=>'## '+titleOf(s)+'\n\n'+s.body).join('\n\n---\n\n');
-      name = `editorial-hub-v${D.meta.version}.md`;
-    } else {
-      const id = location.hash.slice(1) || D.sections[0].id;
-      const s = D.sections.find(x=>x.id===id) || D.sections[0];
-      content = s.body; name = `${s.id}.md`;
-    }
+    const id = location.hash.slice(1) || D.sections[0].id;
+    const s = normalizeSection(D.sections.find(x=>x.id===id) || D.sections[0]);
+    const content = `# ${titleOf(s)}\n\n${stripFirstHeading(s.body)}`.trim();
+    const name = `${s.id}.md`;
+    downloadMarkdown(content, name);
+  }
+
+  function exportAllMd(e){
+    e && e.preventDefault();
+    const entries = D.sections.map(normalizeSection);
+    const toc = ['## Содержание', '', ...entries.map((section, index)=>`${index + 1}. [${titleOf(section)}](#${section.id})`), '', ''].join('\n');
+    const body = entries.map(section=>{
+      const heading = `## ${titleOf(section)} (/${section.id})`;
+      const normalizedBody = stripFirstHeading(section.body);
+      const related = section.related.length ? `\n\n### Связанные разделы\n${section.related.map(r => `- ${r}`).join('\n')}` : '';
+      return `${heading}\n\n${normalizedBody}\n${related}`;
+    }).join('\n\n---\n\n');
+    const content = `# ${D.meta.title} v${D.meta.version}\n\n- обновлено: ${D.meta.updated}\n- статус: ${formatMetaStatus(D.meta.status)}\n- языки: ${(D.meta.langs || []).join(', ')}\n\n${toc}${body}`;
+    downloadMarkdown(content, `editorial-hub-v${D.meta.version}.md`);
+  }
+
+  function downloadMarkdown(content, name){
     const blob = new Blob([content], {type:'text/markdown;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = name; a.click();
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
   }
 
-  searchEl && searchEl.addEventListener('input', e=>renderNav(e.target.value));
-  exportBtn && exportBtn.addEventListener('click', exportMd);
+  if(searchEl){
+    searchEl.addEventListener('input', e=>renderNav(e.target.value));
+  }
+  if(clearSearchBtn){
+    clearSearchBtn.addEventListener('click', () => {
+      if(!searchEl) return;
+      searchEl.value = '';
+      renderNav('');
+      searchEl.focus();
+    });
+  }
+  if(exportBtn){
+    exportBtn.addEventListener('click', exportMd);
+  }
+  if(exportAllBtn){
+    exportAllBtn.addEventListener('click', exportAllMd);
+  }
   window.addEventListener('hashchange', ()=>{ renderView(); renderNav(searchEl ? searchEl.value : ''); window.scrollTo(0,0); });
 
   renderNav('');
