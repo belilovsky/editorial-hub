@@ -13,6 +13,27 @@
   const themeColorEl = document.getElementById('themeColor');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
+  const STATUS_LABELS = {
+    'template-ready': 'готово как шаблон',
+    'requires-review': 'требует проверки',
+    draft: 'черновик'
+  };
+  const ROLE_LABELS = {
+    'editorial-team': 'редакционная группа',
+    'editorial-director': 'главный редактор',
+    'editorial-lead': 'руководитель редакции',
+    'senior-editor': 'старший редактор',
+    legal: 'юрист',
+    'editor-reporter': 'редактор или корреспондент',
+    'editorial-ops': 'редакционные операции'
+  };
+  const REVIEW_LABELS = {
+    quarterly: 'ежеквартально',
+    'launch-critical': 'перед запуском',
+    monthly: 'ежемесячно',
+    'as-needed': 'по необходимости',
+    weekly: 'еженедельно'
+  };
 
   function normalizeSection(section){
     return {
@@ -68,6 +89,20 @@
     }catch(_e){
       return '#';
     }
+  }
+  function formatStatus(value){
+    return STATUS_LABELS[value] || value || 'не определён';
+  }
+  function formatRole(value){
+    return ROLE_LABELS[value] || value || 'не определён';
+  }
+  function formatReviewCycle(value){
+    return REVIEW_LABELS[value] || value || 'не определён';
+  }
+  function formatMetaStatus(value){
+    return String(value || '')
+      .replace('template-ready', 'готово как шаблон')
+      .replace('requires local legal/contact configuration', 'требует локальной юридической проверки и настройки канала обращений');
   }
   function link(label, href){
     const safe = safeHref(href);
@@ -324,7 +359,7 @@
   function sectionStats(section){
     const words = wordCount(section.body || '');
     const risk = section.riskLevel || 'P1';
-    const status = section.contentStatus || 'template-ready';
+    const status = formatStatus(section.contentStatus || 'template-ready');
     return `~${words} слов · ${esc(risk)} · ${esc(status)}`;
   }
 
@@ -384,17 +419,17 @@
           <div class="meta-card">
             <div class="meta-label">Объём</div>
             <div class="meta-value">${wordCount(s.body)} слов</div>
-            <div class="meta-note">Оценка для текущей версии, без учёта export actions.</div>
+            <div class="meta-note">Оценка для текущей версии, без учёта операций экспорта.</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">Риск / статус</div>
-            <div class="meta-value">${esc((s.riskLevel || 'P1') + ' / ' + (s.contentStatus || 'template-ready'))}</div>
-            <div class="meta-note">Owner: ${esc(s.ownerRole)} · Review: ${esc(s.reviewCycle || 'не определён')}</div>
+            <div class="meta-value">${esc((s.riskLevel || 'P1') + ' / ' + formatStatus(s.contentStatus || 'template-ready'))}</div>
+            <div class="meta-note">Ответственный: ${esc(formatRole(s.ownerRole))} · Пересмотр: ${esc(formatReviewCycle(s.reviewCycle || 'не определён'))}</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">Актуальность</div>
             <div class="meta-value">v${esc(D.meta.version)}</div>
-            <div class="meta-note">${esc(D.meta.updated)} · ${esc(D.meta.status)}</div>
+            <div class="meta-note">${esc(D.meta.updated)} · ${esc(formatMetaStatus(D.meta.status))}</div>
           </div>
         </section>
         ${s.id === 'overview' ? `<section class="overview-grid">${renderOverviewCards()}</section>` : ''}
@@ -436,7 +471,7 @@
       const related = section.related.length ? `\n\n### Связанные разделы\n${section.related.map(r => `- ${r}`).join('\n')}` : '';
       return `${heading}\n\n${normalizedBody}\n${related}`;
     }).join('\n\n---\n\n');
-    const content = `# ${D.meta.title} v${D.meta.version}\n\n- updated: ${D.meta.updated}\n- status: ${D.meta.status}\n- langs: ${(D.meta.langs || []).join(', ')}\n\n${toc}${body}`;
+    const content = `# ${D.meta.title} v${D.meta.version}\n\n- обновлено: ${D.meta.updated}\n- статус: ${formatMetaStatus(D.meta.status)}\n- языки: ${(D.meta.langs || []).join(', ')}\n\n${toc}${body}`;
     downloadMarkdown(content, `editorial-hub-v${D.meta.version}.md`);
   }
 

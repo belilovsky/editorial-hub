@@ -70,9 +70,9 @@ for (const section of data.sections) {
     warnings.push(`requiresLegal отмечен, но contentStatus не указывает review: ${id}`);
   }
   if (section.id === 'launch-status') {
-    const hasLegal = /Legal sign-off|legal sign-off/.test(bodyText);
-    const hasPublic = /Public request channel|публичный канал|real/.test(bodyText);
-    if (!hasLegal) warnings.push(`launch-status: не документирует legal sign-off gate: ${id}`);
+    const hasLegal = /Legal sign-off|legal sign-off|Юридическое согласование/.test(bodyText);
+    const hasPublic = /Public request channel|публичный канал|электронную почту|службу поддержки|форму/.test(bodyText);
+    if (!hasLegal) warnings.push(`launch-status: не документирует юридическое согласование: ${id}`);
     if (!hasPublic) warnings.push(`launch-status: не документирует публичный канал для обращений: ${id}`);
   }
 }
@@ -94,8 +94,8 @@ function findDuplicates(values){
   return [...dups];
 }
 
-if (!data.meta || typeof data.meta.status !== 'string' || !/template-ready|draft/i.test(data.meta.status)) {
-  warnings.push(`meta.status должен быть честным и не production-ready: ${data.meta && data.meta.status}`);
+if (!data.meta || typeof data.meta.status !== 'string' || !/template-ready|draft|готово как шаблон|черновик/i.test(data.meta.status)) {
+  warnings.push(`meta.status должен быть честным и не имитировать полную готовность к публикации: ${data.meta && data.meta.status}`);
 }
 
 const legal = data.sections.some(s => s.id === 'legal');
