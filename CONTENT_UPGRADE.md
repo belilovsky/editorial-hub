@@ -32,6 +32,22 @@ Source reviewed: `/Users/belilovsky/Downloads/__1.md` (1963 lines, 206 KB).
 - Added Kazakh short policy summary, daily editorial checklists and wording examples.
 - Added launch-status section separating completed product work from external legal/contact gates.
 
+## Second pass (template governance + operational pass, 04.06.2026)
+
+- Changed product label from `production-ready` to `template-ready · requires local legal/contact configuration` to avoid false production signaling.
+- Introduced section-level metadata (`riskLevel`, `contentStatus`, `ownerRole`, `reviewCycle`, `requiresLegal`, `publicFacing`, `related`) on key sections and enabled data-driven featured cards.
+- Reworked markdown export UX: split section export and full policy export into separate actions.
+- Fixed full-export duplication by rendering full section body without re-adding top-level heading from `data.js`.
+- Added `tools/audit-content.mjs` as a lightweight validator (`node tools/audit-content.mjs`) for:
+  - unique ids
+  - required section fields
+  - minimum text-depth guardrails for P0/P1 content
+  - related links on priority sections
+  - TODO/lorem smoke checks
+  - external legal/contact gate presence signal
+- Added explicit clear-search control and footer copy updates in shell UI for better usability.
+- Kept unresolved gates explicit: legal sign-off and public request channel remain required by project owner before using as legal-facing final policy.
+
 ## Code/UI fixes made during the content pass
 
 - Fixed a data/render contract mismatch: `app.js` expected `section.title`, while `data.js` did not provide it.

@@ -1,22 +1,30 @@
 window.EH_DATA = {
   meta: {
     title: "Editorial Hub",
-    version: "1.3",
+    version: "2.0",
     langs: ["ru", "kk"],
-    updated: "01.06.2026",
-    status: "production-ready · policy-only shell"
+    updated: "04.06.2026",
+    status: "template-ready · requires local legal/contact configuration"
   },
   sections: [
-    {
+  {
       id: "overview",
       title: "Обзор",
       group: "Основа",
+      featured: true,
+      riskLevel: "P0",
+      contentStatus: "template-ready",
+      ownerRole: "editorial-director",
+      reviewCycle: "quarterly",
+      requiresLegal: true,
+      publicFacing: true,
+      related: ["scope", "launch-status", "templates"],
       summary: "Политика стала рабочим контуром: источники, фактчек, AI, UGC, правки, выборы, RU/KZ и юридические триггеры.",
-      body: `# Editorial Hub v1.3
+      body: `# Editorial Hub v2.0
 
 Editorial Hub — единая редакционная политика для мультиплатформенных контент-проектов в Казахстане: сайт, Telegram, Instagram, YouTube, TikTok, рассылки, push, карточки, captions, thumbnails, shorts/reels, live и архивные обновления.
 
-Версия v1.3 сохраняет закрытые пробелы аудита и выносит Editorial Hub в самостоятельный policy-only shell: вместо набора принципов теперь есть процедуры, уровни риска, правила источников, AI, UGC, исправлений, выборов, sensitive coverage, RU/KZ workflow, публичные обращения, примеры и редакционные чек-листы.
+Версия v2.0 расширяет закрытые пробелы аудита и выносит Editorial Hub в самостоятельный policy-only shell: вместо набора принципов теперь есть процедуры, уровни риска, правила источников, AI, UGC, исправлений, выборов, sensitive coverage, RU/KZ workflow, публичные обращения, примеры и редакционные чек-листы.
 
 - 32 раздела вместо короткого прототипа
 - Явные P0-правила для источников, анонимности, right of reply, фактчека и evidence file
@@ -26,16 +34,24 @@ Editorial Hub — единая редакционная политика для 
 - Публичный маршрут обращений описан как обязательный contract без фейкового email
 - Добавлены практические примеры формулировок и pre-publish checklist
 
-Статус: production-ready для статического policy hub. Внешние gates вынесены отдельно: legal sign-off и реальный публичный канал обращений проекта-носителя.`
+Статус: template-ready для шаблонного policy shell. Внешние gates вынесены отдельно: legal sign-off и реальный публичный канал обращений проекта-носителя.`
     },
-    {
+  {
       id: "launch-status",
       title: "Статус запуска",
       group: "Основа",
+      featured: true,
+      riskLevel: "P0",
+      contentStatus: "template-ready",
+      ownerRole: "editorial-director",
+      reviewCycle: "launch-critical",
+      requiresLegal: false,
+      publicFacing: true,
+      related: ["legal", "public-requests"],
       summary: "Что готово внутри проекта, а что является внешним gate проекта-носителя.",
       body: `# Статус запуска
 
-Эта версия готова как production-ready статический policy hub: интерфейс, структура, контентные разделы, чек-листы, примеры, RU/KZ workflow, AI-policy, UGC, corrections, elections и public-request contract собраны и проверены.
+Эта версия готова как template-ready policy hub: интерфейс, структура, контентные разделы, чек-листы, примеры, RU/KZ workflow, AI-policy, UGC, corrections, elections и public-request contract собраны и готовы к развертыванию после закрытия внешних gates.
 
 ## Готово внутри проекта
 - Публичная структура политики и навигация
@@ -55,10 +71,18 @@ Editorial Hub — единая редакционная политика для 
 ## Правило публикации
 Если policy используется как template или демонстрационный hub, текущая версия готова. Если policy публикуется от имени конкретного медиа как юридически значимый публичный документ, внешние gates должны быть закрыты до финального анонса.`
     },
-    {
+  {
       id: "scope",
       title: "Применимость",
       group: "Основа",
+      featured: true,
+      riskLevel: "P1",
+      contentStatus: "template-ready",
+      ownerRole: "editorial-lead",
+      reviewCycle: "quarterly",
+      requiresLegal: false,
+      publicFacing: true,
+      related: ["public-requests", "legal", "methodology"],
       summary: "Кто обязан соблюдать политику, какие поверхности покрыты и что делать, если кейс не описан.",
       body: `# Статус и применимость
 
@@ -72,10 +96,18 @@ Editorial Hub — единая редакционная политика для 
 
 Эта политика не заменяет юридическую консультацию. Она задаёт редакционный маршрут: когда материал можно выпускать обычным порядком, а когда нужна правовая проверка до публикации.`
     },
-    {
+  {
       id: "principles",
       title: "Базовые принципы",
       group: "Основа",
+      featured: true,
+      riskLevel: "P1",
+      contentStatus: "template-ready",
+      ownerRole: "editorial-lead",
+      reviewCycle: "quarterly",
+      requiresLegal: false,
+      publicFacing: true,
+      related: ["scope", "conflicts", "training"],
       summary: "Короткий набор принципов, из которых выводятся все рабочие процедуры.",
       body: `# Базовые принципы
 
@@ -87,10 +119,18 @@ Editorial Hub — единая редакционная политика для 
 6. **Подотчётность** — ошибки исправляются быстро, заметно и на всех платформах, где они были опубликованы.
 7. **Человеческая ответственность за AI** — AI может помогать, но не принимает редакционные решения и не является источником фактов.`
     },
-    {
+  {
       id: "risk-matrix",
       title: "Уровни риска",
       group: "Основа",
+      featured: true,
+      riskLevel: "P0",
+      contentStatus: "template-ready",
+      ownerRole: "senior-editor",
+      reviewCycle: "monthly",
+      requiresLegal: false,
+      publicFacing: true,
+      related: ["legal", "factcheck", "corrections", "public-requests"],
       summary: "Единая матрица low / medium / high / red для редакторов, SMM и переводчиков.",
       body: `# Уровни редакционного риска
 
@@ -106,10 +146,17 @@ Editorial Hub — единая редакционная политика для 
 ## Red risk
 Серьёзные обвинения против конкретных лиц или организаций, doxxing, угроза источнику, персональные данные, несовершеннолетние жертвы, graphic violence, suicide method, день тишины, возможная межэтническая или религиозная эскалация, требование снять материал, судебная претензия. Требуется главный редактор и юридическая консультация до публикации.`
     },
-    {
+  {
       id: "legal",
       title: "Правовая рамка",
       group: "Основа",
+      riskLevel: "P0",
+      contentStatus: "requires-review",
+      ownerRole: "legal",
+      reviewCycle: "as-needed",
+      requiresLegal: true,
+      publicFacing: true,
+      related: ["public-requests", "factcheck", "corrections"],
       summary: "Казахстанские legal-review triggers без подмены юридического заключения.",
       body: `# Правовая рамка и legal-review triggers
 
@@ -130,10 +177,18 @@ Editorial Hub — единая редакционная политика для 
 ## Запросы от госорганов и юридические претензии
 Любой официальный запрос, требование об удалении, претензия, предупреждение или запрос персональных данных передаётся главному редактору и юристу. Ответ даётся письменно; устные договорённости не считаются решением редакции.`
     },
-    {
+  {
       id: "sources",
       title: "Источники",
       group: "Сбор и проверка",
+      featured: true,
+      riskLevel: "P0",
+      contentStatus: "template-ready",
+      ownerRole: "editor-reporter",
+      reviewCycle: "weekly",
+      requiresLegal: false,
+      publicFacing: true,
+      related: ["factcheck", "visual-verification", "public-requests"],
       summary: "Иерархия источников, анонимность, право на комментарий и защита от circular sourcing.",
       body: `# Источники и анонимность
 
@@ -166,10 +221,18 @@ Editorial Hub — единая редакционная политика для 
 ## Право на комментарий
 Если материал содержит обвинение, серьёзную критику или негативное утверждение о человеке или организации, редакция до публикации запрашивает комментарий. Если ответа нет, в материале указывается, когда и каким способом был направлен запрос.`
     },
-    {
+  {
       id: "factcheck",
       title: "Фактчек",
       group: "Сбор и проверка",
+      featured: true,
+      riskLevel: "P0",
+      contentStatus: "template-ready",
+      ownerRole: "editorial-checker",
+      reviewCycle: "daily",
+      requiresLegal: false,
+      publicFacing: true,
+      related: ["sources", "legal", "visual-verification"],
       summary: "Workflow, evidence file и запрет выдавать непроверенное за установленный факт.",
       body: `# Фактчек и evidence file
 
@@ -231,10 +294,18 @@ Reverse search обязателен, но сам по себе не подтве
 ## Графический контент
 Кровь, тела, насилие, момент смерти, самоубийство, издевательства и humiliation не используются в превью, обложках, thumbnails и автозапускаемых видео. Публикация возможна только при существенном общественном интересе, с предупреждением и решением senior editor.`
     },
-    {
+  {
       id: "ai-policy",
       title: "AI и синтетика",
       group: "AI и платформы",
+      featured: true,
+      riskLevel: "P0",
+      contentStatus: "template-ready",
+      ownerRole: "editorial-ops",
+      reviewCycle: "monthly",
+      requiresLegal: true,
+      publicFacing: true,
+      related: ["factcheck", "corrections", "platforms"],
       summary: "Разрешённые use cases, красные линии, disclosure, synthetic media и audit log.",
       body: `# AI-policy и synthetic media
 
@@ -343,10 +414,18 @@ AI может помогать редакции, но не заменяет жу
 ## Архив
 При снятии материала URL по возможности сохраняется с редакционным объяснением. Исключение — случаи, когда само объяснение усиливает вред: раскрывает ребёнка, жертву, источник, персональные данные или опасные детали.`
     },
-    {
+  {
       id: "public-requests",
       title: "Публичные обращения",
       group: "Прозрачность",
+      featured: true,
+      riskLevel: "P1",
+      contentStatus: "template-ready",
+      ownerRole: "editorial-support",
+      reviewCycle: "daily",
+      requiresLegal: false,
+      publicFacing: true,
+      related: ["corrections", "legal", "scope"],
       summary: "Как принимать сообщения об ошибках, право на ответ, жалобы, takedown и AI-disclosure без хаоса.",
       body: `# Публичные обращения и канал ошибок
 
@@ -844,7 +923,7 @@ AI использовался для [...]. Факты, цитаты, источ
 
 Используйте кнопку Markdown в сайдбаре, чтобы скачать текущий раздел в .md.
 
-Для выгрузки всей политики целиком: откройте раздел и нажмите Markdown с зажатым Shift. Будет выгружен единый файл editorial-hub-v1.3.md со всеми разделами.
+Для выгрузки всей политики целиком используйте кнопку «Вся политика .md» — будет выгружен единый файл editorial-hub-v2.0.md со всеми разделами и оглавлением.
 
 Перед публикацией финальной версии сохраните export в редакционном архиве и приложите changelog: какие разделы менялись, кто согласовал, какие legal notes остались открытыми.`
     }

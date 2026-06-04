@@ -7,11 +7,30 @@
   const sectionStatsEl = document.getElementById('sectionStats');
   const themeRow = document.getElementById('themeRow');
   const exportBtn = document.getElementById('exportMd');
+  const exportAllBtn = document.getElementById('exportAllMd');
   const searchEl = document.getElementById('search');
+  const clearSearchBtn = document.getElementById('clearSearch');
   const themeColorEl = document.getElementById('themeColor');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
-  const FEATURED_OVERVIEW_IDS = ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'];
+
+  function normalizeSection(section){
+    return {
+      id: section && section.id ? section.id : '',
+      featured: !!(section && section.featured),
+      title: section && section.title ? section.title : titleOf(section),
+      group: section && section.group ? section.group : 'Разделы',
+      summary: section && section.summary ? section.summary : firstParagraph(section && section.body || ''),
+      body: section && section.body ? section.body : '',
+      riskLevel: section && section.riskLevel ? section.riskLevel : 'P1',
+      contentStatus: section && section.contentStatus ? section.contentStatus : 'template-ready',
+      ownerRole: section && section.ownerRole ? section.ownerRole : 'editorial-team',
+      reviewCycle: section && section.reviewCycle ? section.reviewCycle : 'не определён',
+      requiresLegal: !!section && section.requiresLegal,
+      publicFacing: section && typeof section.publicFacing === 'boolean' ? section.publicFacing : true,
+      related: Array.isArray(section && section.related) ? section.related : []
+    };
+  }
 
   function getStoredTheme(){
     try { return localStorage.getItem('eh-theme'); }
@@ -145,13 +164,24 @@
     return D.sections.find(x=>x.id===id) || D.sections[0];
   }
 
+  function getFeaturedSections(){
+    const explicit = D.sections
+      .map(section => normalizeSection(section))
+      .filter(section => section.id && section.featured);
+    if (explicit.length) return explicit;
+    return D.sections
+      .map(section => normalizeSection(section))
+      .filter(section => ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'].includes(section.id));
+  }
+
   function groupSections(filter){
     const q = (filter || '').toLowerCase().trim();
     const groups = new Map();
-    D.sections.forEach(section=>{
+    D.sections.forEach(raw=>{
+      const section = normalizeSection(raw);
       const haystack = `${titleOf(section)}\n${section.summary || ''}\n${section.body}`.toLowerCase();
       if(q && !haystack.includes(q)) return;
-      const key = section.group || 'Разделы';
+      const key = section.group;
       if(!groups.has(key)) groups.set(key, []);
       groups.get(key).push(section);
     });
@@ -190,15 +220,13 @@
   }
 
   function renderOverviewCards(){
-    return FEATURED_OVERVIEW_IDS.map(id=>{
-      const section = sectionById(id);
-      const title = titleOf(section);
+    return getFeaturedSections().map(section=>{
       return `<a class="overview-card" href="#${attr(section.id)}">
         <div class="overview-label">${esc(section.group || 'Раздел')}</div>
-        <h2 class="overview-title">${esc(title)}</h2>
+        <h2 class="overview-title">${esc(titleOf(section))}</h2>
         <div class="overview-note">${esc(section.summary || firstParagraph(section.body))}</div>
       </a>`;
-    }).join('');
+    }).join('') || '';
   }
 
   function renderSignalPills(items){
@@ -209,17 +237,23 @@
     </div>`;
   }
 
+  function sectionStats(section){
+    const words = wordCount(section.body || '');
+    const risk = section.riskLevel || 'P1';
+    const status = section.contentStatus || 'template-ready';
+    return `~${words} слов · ${esc(risk)} · ${esc(status)}`;
+  }
+
   function renderView(){
     const id = location.hash.slice(1) || D.sections[0].id;
-    const s = sectionById(id);
+    const s = normalizeSection(sectionById(id));
     const title = titleOf(s);
     const summary = s.summary || firstParagraph(s.body);
     const quickItems = excerptItems(s.body, 4);
     const content = md(stripFirstHeading(s.body));
-    const words = wordCount(s.body);
     crumbEl.textContent = s.group || 'Политика';
     if(sectionLeadEl) sectionLeadEl.textContent = summary;
-    if(sectionStatsEl) sectionStatsEl.textContent = `${quickItems.length || 1} ориентира`;
+    if(sectionStatsEl) sectionStatsEl.textContent = sectionStats(s);
     viewEl.innerHTML = `
       <div class="section-shell">
         <section class="section-header">
@@ -235,8 +269,13 @@
           </div>
           <div class="meta-card">
             <div class="meta-label">Объём</div>
-            <div class="meta-value">${words}</div>
-            <div class="meta-note">Слов в текущем разделе без учёта экспортных действий.</div>
+            <div class="meta-value">${wordCount(s.body)} слов</div>
+            <div class="meta-note">Оценка для текущей версии, без учёта export actions.</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Риск / статус</div>
+            <div class="meta-value">${esc((s.riskLevel || 'P1') + ' / ' + (s.contentStatus || 'template-ready'))}</div>
+            <div class="meta-note">Owner: ${esc(s.ownerRole)} · Review: ${esc(s.reviewCycle || 'не определён')}</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">Актуальность</div>
@@ -254,28 +293,59 @@
       if(active) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
+    const activeLink = navEl.querySelector('a.active');
+    if(activeLink && activeLink.scrollIntoView){
+      activeLink.scrollIntoView({ block: 'nearest' });
+    }
     document.title = `${title} \u2014 ${D.meta.title}`;
   }
   function exportMd(e){
     e && e.preventDefault();
-    const all = e && e.shiftKey;
-    let content, name;
-    if(all){
-      content = `# ${D.meta.title} v${D.meta.version}\n\n` + D.sections.map(s=>'## '+titleOf(s)+'\n\n'+s.body).join('\n\n---\n\n');
-      name = `editorial-hub-v${D.meta.version}.md`;
-    } else {
-      const id = location.hash.slice(1) || D.sections[0].id;
-      const s = D.sections.find(x=>x.id===id) || D.sections[0];
-      content = s.body; name = `${s.id}.md`;
-    }
+    const id = location.hash.slice(1) || D.sections[0].id;
+    const s = normalizeSection(D.sections.find(x=>x.id===id) || D.sections[0]);
+    const content = `# ${titleOf(s)}\n\n${stripFirstHeading(s.body)}`.trim();
+    const name = `${s.id}.md`;
+    downloadMarkdown(content, name);
+  }
+
+  function exportAllMd(e){
+    e && e.preventDefault();
+    const entries = D.sections.map(normalizeSection);
+    const toc = ['## Содержание', '', ...entries.map((section, index)=>`${index + 1}. [${titleOf(section)}](#${section.id})`), '', ''].join('\n');
+    const body = entries.map(section=>{
+      const heading = `## ${titleOf(section)} (/${section.id})`;
+      const normalizedBody = stripFirstHeading(section.body);
+      const related = section.related.length ? `\n\n### Связанные разделы\n${section.related.map(r => `- ${r}`).join('\n')}` : '';
+      return `${heading}\n\n${normalizedBody}\n${related}`;
+    }).join('\n\n---\n\n');
+    const content = `# ${D.meta.title} v${D.meta.version}\n\n- updated: ${D.meta.updated}\n- status: ${D.meta.status}\n- langs: ${(D.meta.langs || []).join(', ')}\n\n${toc}${body}`;
+    downloadMarkdown(content, `editorial-hub-v${D.meta.version}.md`);
+  }
+
+  function downloadMarkdown(content, name){
     const blob = new Blob([content], {type:'text/markdown;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = name; a.click();
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
   }
 
-  searchEl && searchEl.addEventListener('input', e=>renderNav(e.target.value));
-  exportBtn && exportBtn.addEventListener('click', exportMd);
+  if(searchEl){
+    searchEl.addEventListener('input', e=>renderNav(e.target.value));
+  }
+  if(clearSearchBtn){
+    clearSearchBtn.addEventListener('click', () => {
+      if(!searchEl) return;
+      searchEl.value = '';
+      renderNav('');
+      searchEl.focus();
+    });
+  }
+  if(exportBtn){
+    exportBtn.addEventListener('click', exportMd);
+  }
+  if(exportAllBtn){
+    exportAllBtn.addEventListener('click', exportAllMd);
+  }
   window.addEventListener('hashchange', ()=>{ renderView(); renderNav(searchEl ? searchEl.value : ''); window.scrollTo(0,0); });
 
   renderNav('');

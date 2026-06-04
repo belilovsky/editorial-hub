@@ -68,6 +68,8 @@ code,pre,kbd{font-family:var(--font-mono)}
 .theme-row button[aria-pressed="true"]{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
 .foot-row{display:flex;gap:6px}
 .foot-row a,.foot-row button{flex:1;background:var(--background);border:1px solid var(--border);color:var(--foreground);padding:8px 8px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:inherit;text-align:center}
+.search-controls{display:flex;gap:6px}
+.search-controls a,.search-controls button{flex:1;background:var(--background);border:1px solid var(--border);color:var(--foreground);padding:8px 8px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:inherit;text-align:center}
 .foot-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;color:var(--muted-foreground);font-size:11px;letter-spacing:0;text-align:center;padding-top:2px}
 .foot-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:var(--secondary);border:1px solid color-mix(in srgb,var(--primary) 16%,var(--border));color:var(--primary);font-size:10px;font-weight:600;line-height:1.2}
 #main{padding:24px 32px 40px;max-width:1240px;width:100%;min-width:0}
@@ -83,7 +85,7 @@ code,pre,kbd{font-family:var(--font-mono)}
 .section-eyebrow{color:var(--muted-foreground);font-size:11px;font-weight:600;letter-spacing:0;text-transform:uppercase;margin-bottom:10px}
 .section-title{font-family:var(--font-serif);font-size:34px;font-weight:600;line-height:1.15;margin:0 0 10px;letter-spacing:0}
 .section-summary{color:var(--muted-foreground);font-size:15px;line-height:1.6;max-width:760px;margin:0}
-.meta-grid,.overview-grid,.signal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.meta-grid,.overview-grid,.signal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .meta-card,.overview-card,.signal-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
 .meta-label,.overview-label{color:var(--muted-foreground);font-size:11px;font-weight:600;letter-spacing:0;text-transform:uppercase;margin-bottom:8px}
 .meta-value{font-family:var(--font-serif);font-size:22px;line-height:1.15;margin:0 0 4px}
