@@ -67,6 +67,8 @@ try {
   await page.goto(`http://127.0.0.1:${port}/#unknown-section`, { waitUntil: 'networkidle' });
   await check(await page.locator('h1.section-title').innerText() === 'Раздел не найден', 'unknown hash should show section 404');
   await check(await page.locator('.nav-group a.active').count() === 0, 'unknown hash should not mark a random nav link active');
+  await page.goto(`http://127.0.0.1:${port}/#%E0%A4%A`, { waitUntil: 'networkidle' });
+  await check(await page.locator('h1.section-title').innerText() === 'Обзор', 'malformed hash should not crash the SPA');
 
   await page.goto(`http://127.0.0.1:${port}/#overview`, { waitUntil: 'networkidle' });
   const firstGroup = page.locator('button[data-group]').first();
@@ -90,6 +92,30 @@ try {
   await page.locator('#menuToggle').click();
   await check(await page.locator('#menuToggle').getAttribute('aria-expanded') === 'true', 'mobile menu toggle should update aria-expanded');
   await check(await page.locator('#nav').evaluate(el => !el.classList.contains('nav-collapsed')), 'mobile menu toggle should expand nav');
+  await page.locator('#nav a[href="#sources"]').click();
+  await page.waitForTimeout(120);
+  await check(await page.locator('#nav').evaluate(el => el.classList.contains('nav-collapsed')), 'mobile nav should collapse after selecting a section');
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const sectionIds = await page.evaluate(() => window.EH_DATA.sections.map(section => section.id));
+  for (const sectionId of sectionIds) {
+    await page.goto(`http://127.0.0.1:${port}/#${sectionId}`, { waitUntil: 'networkidle' });
+    await check(await page.locator('h1.section-title').count() === 1, `section ${sectionId} should render one h1`);
+    await check(await page.locator('#nav a.active').count() === 1, `section ${sectionId} should mark one active nav link`);
+  }
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.locator('#exportAllMd').click();
+  const download = await downloadPromise;
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  const markdown = Buffer.concat(chunks).toString('utf8');
+  await check(markdown.includes('- Версия: v2.0'), 'export should include version header');
+  await check(markdown.includes('- Дата экспорта:'), 'export should include export date');
+  await check(markdown.includes('## Содержание'), 'export should include TOC');
+  await check(markdown.includes('### Связанные разделы'), 'export should include related sections');
+  await check(markdown.includes('[Статус запуска](#launch-status)'), 'export should use readable related section links');
 } finally {
   await browser.close();
   server.close();

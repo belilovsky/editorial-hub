@@ -134,7 +134,9 @@
   }
 
   function splitHash(rawHash){
-    const raw = decodeURIComponent(String(rawHash || '').replace(/^#/, '')).trim();
+    let raw = String(rawHash || '').replace(/^#/, '').trim();
+    try { raw = decodeURIComponent(raw).trim(); }
+    catch(_e){ raw = ''; }
     if(!raw) return { sectionId: defaultSectionId(), headingId: '' };
     const parts = raw.split(HASH_SEPARATOR);
     return {
@@ -368,6 +370,7 @@
         a.innerHTML = `<span class="nav-link-text">${esc(title)}</span>`;
         a.dataset.id = s.id;
         a.dataset.label = title;
+        a.addEventListener('click', collapseMobileMenu);
         if(currentRoute().sectionId === s.id){
           a.classList.add('active');
           a.setAttribute('aria-current', 'page');
@@ -612,17 +615,24 @@
   if(menuToggle){
     menuToggle.addEventListener('click', () => {
       const collapsed = !navEl.classList.contains('nav-collapsed');
-      navEl.classList.toggle('nav-collapsed', collapsed);
-      menuToggle.setAttribute('aria-expanded', String(!collapsed));
-      menuToggle.textContent = collapsed ? 'Показать меню' : 'Скрыть меню';
+      setMobileMenuCollapsed(collapsed);
     });
   }
+  function isMobileNav(){
+    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
+  }
+  function setMobileMenuCollapsed(collapsed){
+    if(!menuToggle) return;
+    navEl.classList.toggle('nav-collapsed', collapsed);
+    menuToggle.setAttribute('aria-expanded', String(!collapsed));
+    menuToggle.textContent = collapsed ? 'Показать меню' : 'Скрыть меню';
+  }
+  function collapseMobileMenu(){
+    if(isMobileNav()) setMobileMenuCollapsed(true);
+  }
   function applyResponsiveMenuDefault(){
-    if(!menuToggle || !window.matchMedia) return;
-    const shouldCollapse = window.matchMedia('(max-width: 720px)').matches;
-    navEl.classList.toggle('nav-collapsed', shouldCollapse);
-    menuToggle.setAttribute('aria-expanded', String(!shouldCollapse));
-    menuToggle.textContent = shouldCollapse ? 'Показать меню' : 'Скрыть меню';
+    if(!menuToggle) return;
+    setMobileMenuCollapsed(isMobileNav());
   }
   function loadExpandedGroups(){
     try{
