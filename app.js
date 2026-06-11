@@ -28,14 +28,17 @@
     'senior-editor': 'старший редактор',
     legal: 'юрист',
     'editor-reporter': 'редактор или корреспондент',
-    'editorial-ops': 'редакционные операции'
+    'editorial-checker': 'редактор проверки фактов',
+    'editorial-ops': 'редактор процессов',
+    'editorial-support': 'ответственный за обращения'
   };
   const REVIEW_LABELS = {
     quarterly: 'ежеквартально',
     'launch-critical': 'перед запуском',
     monthly: 'ежемесячно',
     'as-needed': 'по необходимости',
-    weekly: 'еженедельно'
+    weekly: 'еженедельно',
+    daily: 'ежедневно'
   };
 
   function normalizeSection(section){
@@ -49,7 +52,7 @@
       riskLevel: section && section.riskLevel ? section.riskLevel : 'P1',
       contentStatus: section && section.contentStatus ? section.contentStatus : 'template-ready',
       ownerRole: section && section.ownerRole ? section.ownerRole : 'editorial-team',
-      reviewCycle: section && section.reviewCycle ? section.reviewCycle : 'не определён',
+      reviewCycle: section && section.reviewCycle ? section.reviewCycle : 'по редакционному графику',
       requiresLegal: !!section && section.requiresLegal,
       publicFacing: section && typeof section.publicFacing === 'boolean' ? section.publicFacing : true,
       related: Array.isArray(section && section.related) ? section.related : []
@@ -100,7 +103,7 @@
     return ROLE_LABELS[value] || value || 'не определён';
   }
   function formatReviewCycle(value){
-    return REVIEW_LABELS[value] || value || 'не определён';
+    return REVIEW_LABELS[value] || value || 'по редакционному графику';
   }
   function formatMetaStatus(value){
     return String(value || '')
@@ -404,7 +407,7 @@
     const words = wordCount(section.body || '');
     const risk = section.riskLevel || 'P1';
     const status = formatStatus(section.contentStatus || 'template-ready');
-    return `~${words} слов · ${esc(risk)} · ${esc(status)}`;
+    return `${words} слов · ${esc(risk)} · ${esc(status)}`;
   }
 
   function renderToc(headings){
@@ -508,7 +511,7 @@
     viewEl.innerHTML = `
       <div class="section-shell">
         <section class="section-header">
-          <div class="section-eyebrow">${esc(s.id)}</div>
+          <div class="section-eyebrow">${esc(s.group || 'Раздел')}</div>
           <h1 class="section-title" tabindex="-1">${esc(title)}</h1>
           <p class="section-summary">${esc(summary)}</p>
         </section>

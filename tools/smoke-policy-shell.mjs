@@ -31,7 +31,7 @@ function slugify(value) {
 const slugCases = [
   ['Низкий риск', 'низкий-риск'],
   ['Қазақша бөлім 2026', 'қазақша-бөлім-2026'],
-  ['AI / фактчек: P0', 'ai-фактчек-p0'],
+  ['AI / проверка фактов: P0', 'ai-проверка-фактов-p0'],
 ];
 
 for (const [input, expected] of slugCases) {
@@ -42,7 +42,7 @@ assert(data && Array.isArray(data.sections) && data.sections.length >= 30, 'EH_D
 assert(html.includes('id="routeAnnouncer"') && html.includes('aria-live="polite"'), 'route announcer is missing');
 assert(html.includes('<main id="main" role="main" tabindex="-1">'), 'main landmark/focus target is missing');
 assert(html.includes('id="menuToggle"') && html.includes('aria-controls="nav"'), 'mobile menu toggle is missing');
-assert(html.includes('./styles.css?v=20260611a') && html.includes('./app.js?v=20260611a'), 'asset cache-bust was not updated');
+assert(html.includes('./styles.css?v=20260611a') && html.includes('./app.js?v=20260611b') && html.includes('./data.js?v=20260611b'), 'asset cache-bust was not updated');
 assert(styles.includes('.sr-only'), 'sr-only helper is missing');
 assert(styles.includes('.section-title:focus{outline:none}'), 'programmatic h1 focus should not draw a persistent focus ring');
 assert(styles.includes('.menu-toggle') && styles.includes('.nav-collapsed'), 'mobile menu CSS is missing');
