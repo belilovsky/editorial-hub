@@ -42,7 +42,9 @@ assert(data && Array.isArray(data.sections) && data.sections.length >= 30, 'EH_D
 assert(html.includes('id="routeAnnouncer"') && html.includes('aria-live="polite"'), 'route announcer is missing');
 assert(html.includes('<main id="main" role="main" tabindex="-1">'), 'main landmark/focus target is missing');
 assert(html.includes('id="menuToggle"') && html.includes('aria-controls="nav"'), 'mobile menu toggle is missing');
-assert(html.includes('./styles.css?v=20260611a') && html.includes('./app.js?v=20260611b') && html.includes('./data.js?v=20260611b'), 'asset cache-bust was not updated');
+assert(html.includes('./styles.css?v=20260611c') && html.includes('./app.js?v=20260611c') && html.includes('./data.js?v=20260611b'), 'asset cache-bust was not updated');
+assert(html.includes('id="navFilter"') && html.includes('id="copyLink"') && html.includes('id="topExport"'), 'daily work controls are missing');
+assert(html.includes('id="toast"') && html.includes('aria-live="polite"'), 'toast status region is missing');
 assert(styles.includes('.sr-only'), 'sr-only helper is missing');
 assert(styles.includes('.section-title:focus{outline:none}'), 'programmatic h1 focus should not draw a persistent focus ring');
 assert(styles.includes('.menu-toggle') && styles.includes('.nav-collapsed'), 'mobile menu CSS is missing');
@@ -63,6 +65,9 @@ for (const snippet of [
   'function setMobileMenuCollapsed',
   'function collapseMobileMenu',
   'function applyResponsiveMenuDefault',
+  'function setActiveFilter',
+  'function copyCurrentLink',
+  'function renderWorkbench',
   'Дата экспорта',
   'Версия: v${D.meta.version}',
   '`#${relatedSection.id}`',

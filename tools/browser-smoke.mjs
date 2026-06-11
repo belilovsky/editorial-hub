@@ -71,6 +71,19 @@ try {
   await check(await page.locator('h1.section-title').innerText() === 'Обзор', 'malformed hash should not crash the SPA');
 
   await page.goto(`http://127.0.0.1:${port}/#overview`, { waitUntil: 'networkidle' });
+  await check(await page.locator('.workbench').count() === 1, 'overview should show daily workbench');
+  await check(await page.locator('.overview-card[href="#overview"]').count() === 0, 'overview cards should not duplicate current overview section');
+  await check(await page.locator('#navFilter button[data-filter="p0"]').count() === 1, 'quick P0 filter should exist');
+  await page.locator('#navFilter button[data-filter="p0"]').click();
+  await page.waitForTimeout(120);
+  await check(await page.locator('#navFilter button[data-filter="p0"]').getAttribute('aria-pressed') === 'true', 'P0 filter should become active');
+  await check(await page.locator('#nav a[href="#legal"]').count() === 1, 'P0 filter should keep legal section visible');
+  await page.locator('#clearSearch').click();
+  await page.waitForTimeout(120);
+  await check(await page.locator('#navFilter button[data-filter="all"]').getAttribute('aria-pressed') === 'true', 'clear search should reset quick filter');
+  await page.locator('#copyLink').click();
+  await page.locator('#toast.toast-visible').waitFor({ state: 'visible', timeoutMs: 3000 });
+  await check(await page.locator('#toast').innerText() !== '', 'copy link should show toast feedback');
   const firstGroup = page.locator('button[data-group]').first();
   const controlledId = await firstGroup.getAttribute('aria-controls');
   await firstGroup.click();

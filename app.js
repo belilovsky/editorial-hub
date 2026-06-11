@@ -13,8 +13,18 @@
   const clearSearchBtn = document.getElementById('clearSearch');
   const themeColorEl = document.getElementById('themeColor');
   const menuToggle = document.getElementById('menuToggle');
+  const navFilter = document.getElementById('navFilter');
+  const copyLinkBtn = document.getElementById('copyLink');
+  const topExportBtn = document.getElementById('topExport');
+  const toastEl = document.getElementById('toast');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
+  const FILTER_LABELS = {
+    all: 'все разделы',
+    p0: 'разделы P0',
+    legal: 'юридическая проверка',
+    review: 'требуют проверки'
+  };
   const HASH_SEPARATOR = '::';
   const STATUS_LABELS = {
     'template-ready': 'готово как шаблон',
@@ -304,11 +314,18 @@
   function getFeaturedSections(){
     const explicit = D.sections
       .map(section => normalizeSection(section))
-      .filter(section => section.id && section.featured);
+      .filter(section => section.id && section.featured && section.id !== 'overview');
     if (explicit.length) return explicit;
     return D.sections
       .map(section => normalizeSection(section))
       .filter(section => ['launch-status', 'sources', 'factcheck', 'ai-policy', 'public-requests', 'editorial-checklists'].includes(section.id));
+  }
+
+  function sectionMatchesFilter(section){
+    if(activeFilter === 'p0') return section.riskLevel === 'P0';
+    if(activeFilter === 'legal') return !!section.requiresLegal;
+    if(activeFilter === 'review') return section.contentStatus === 'requires-review';
+    return true;
   }
 
   function groupSections(filter){
@@ -316,6 +333,7 @@
     const groups = new Map();
     D.sections.forEach(raw=>{
       const section = normalizeSection(raw);
+      if(!sectionMatchesFilter(section)) return;
       const haystack = `${titleOf(section)}\n${section.summary || ''}\n${section.body}`.toLowerCase();
       if(q && !haystack.includes(q)) return;
       const key = section.group;
@@ -329,7 +347,7 @@
     navEl.innerHTML = '';
     const groups = groupSections(filter);
     if(!groups.size){
-      navEl.innerHTML = '<div class="nav-empty">Ничего не найдено. Уточните термин или откройте обзор.</div>';
+      navEl.innerHTML = `<div class="nav-empty">Ничего не найдено. Активен фильтр: ${esc(FILTER_LABELS[activeFilter] || 'разделы')}. Уточните поиск или сбросьте фильтр.</div>`;
       return;
     }
     groups.forEach((sections, title)=>{
@@ -393,6 +411,47 @@
         <div class="overview-note">${esc(section.summary || firstParagraph(section.body))}</div>
       </a>`;
     }).join('') || '';
+  }
+
+  function countSections(predicate){
+    return D.sections.map(normalizeSection).filter(predicate).length;
+  }
+
+  function renderWorkbench(){
+    const total = D.sections.length;
+    const p0 = countSections(section => section.riskLevel === 'P0');
+    const legal = countSections(section => section.requiresLegal);
+    const review = countSections(section => section.contentStatus === 'requires-review');
+    return `<section class="workbench" aria-label="Рабочий обзор">
+      <div class="workbench-head">
+        <div>
+          <div class="meta-label">Рабочий обзор</div>
+          <h2 class="workbench-title">Ежедневные точки контроля</h2>
+        </div>
+        <div class="workbench-actions">
+          <button type="button" data-set-filter="p0">Показать P0</button>
+          <button type="button" data-set-filter="review">Требуют проверки</button>
+        </div>
+      </div>
+      <div class="workbench-grid">
+        <a href="#launch-status" class="workbench-card">
+          <span class="workbench-value">${total}</span>
+          <span class="workbench-label">раздела в политике</span>
+        </a>
+        <button type="button" class="workbench-card" data-set-filter="p0">
+          <span class="workbench-value">${p0}</span>
+          <span class="workbench-label">критичных P0</span>
+        </button>
+        <button type="button" class="workbench-card" data-set-filter="legal">
+          <span class="workbench-value">${legal}</span>
+          <span class="workbench-label">с юридической проверкой</span>
+        </button>
+        <button type="button" class="workbench-card" data-set-filter="review">
+          <span class="workbench-value">${review}</span>
+          <span class="workbench-label">требуют проверки</span>
+        </button>
+      </div>
+    </section>`;
   }
 
   function renderSignalPills(items){
@@ -537,6 +596,7 @@
             <div class="meta-note">${esc(D.meta.updated)} · ${esc(formatMetaStatus(D.meta.status))}</div>
           </div>
         </section>
+        ${s.id === 'overview' ? renderWorkbench() : ''}
         ${s.id === 'overview' ? `<section class="overview-grid">${renderOverviewCards()}</section>` : ''}
         ${renderSignalPills(quickItems)}
         <article class="doc-body">
@@ -598,6 +658,35 @@
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
   }
 
+  function setActiveFilter(value){
+    activeFilter = FILTER_LABELS[value] ? value : 'all';
+    if(navFilter){
+      navFilter.querySelectorAll('button[data-filter]').forEach(button=>{
+        button.setAttribute('aria-pressed', String(button.dataset.filter === activeFilter));
+      });
+    }
+    renderNav(searchEl ? searchEl.value : '');
+  }
+
+  function showToast(message){
+    if(!toastEl) return;
+    toastEl.textContent = message;
+    toastEl.classList.add('toast-visible');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toastEl.classList.remove('toast-visible'), 2200);
+  }
+
+  function copyCurrentLink(){
+    const url = window.location.href;
+    const done = () => showToast('Ссылка на раздел скопирована');
+    const failed = () => showToast('Ссылка: ' + url);
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(done).catch(failed);
+    } else {
+      failed();
+    }
+  }
+
   if(searchEl){
     searchEl.addEventListener('input', e=>renderNav(e.target.value));
   }
@@ -605,8 +694,15 @@
     clearSearchBtn.addEventListener('click', () => {
       if(!searchEl) return;
       searchEl.value = '';
-      renderNav('');
+      setActiveFilter('all');
       searchEl.focus();
+    });
+  }
+  if(navFilter){
+    navFilter.addEventListener('click', event => {
+      const button = event.target.closest('button[data-filter]');
+      if(!button) return;
+      setActiveFilter(button.dataset.filter);
     });
   }
   if(exportBtn){
@@ -615,6 +711,19 @@
   if(exportAllBtn){
     exportAllBtn.addEventListener('click', exportAllMd);
   }
+  if(topExportBtn){
+    topExportBtn.addEventListener('click', exportMd);
+  }
+  if(copyLinkBtn){
+    copyLinkBtn.addEventListener('click', copyCurrentLink);
+  }
+  viewEl.addEventListener('click', event => {
+    const button = event.target.closest('[data-set-filter]');
+    if(!button) return;
+    setActiveFilter(button.dataset.setFilter);
+    if(searchEl) searchEl.focus({ preventScroll: true });
+    showToast(`Фильтр: ${FILTER_LABELS[activeFilter] || 'все разделы'}`);
+  });
   if(menuToggle){
     menuToggle.addEventListener('click', () => {
       const collapsed = !navEl.classList.contains('nav-collapsed');
@@ -651,6 +760,7 @@
     catch(_e){}
   }
 
+  let activeFilter = 'all';
   let expandedGroups = loadExpandedGroups();
   let expandedGroupsInitialized = expandedGroups.size > 0;
 
@@ -665,6 +775,7 @@
   window.addEventListener('resize', applyResponsiveMenuDefault);
 
   ensureDefaultExpandedGroups();
+  setActiveFilter('all');
   renderNav('');
   applyResponsiveMenuDefault();
   if(!location.hash) location.hash = defaultSectionId(); else renderView();

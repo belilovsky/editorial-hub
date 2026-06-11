@@ -23,7 +23,7 @@
 <link rel="preload" href="./fonts/avds/ibm-plex-serif-018.woff2?v=20260601e" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="./fonts/avds/ibm-plex-serif-021.woff2?v=20260601e" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./fonts/avds/avds-local-fonts.css?v=20260601e">
-<link rel="stylesheet" href="./styles.css?v=20260611a">
+<link rel="stylesheet" href="./styles.css?v=20260611c">
 </head>
 <body>
 <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -40,6 +40,12 @@
   <div class="search-wrap">
     <label class="field-label" for="search">Навигация</label>
     <input id="search" type="search" placeholder="Найти раздел, правило или процесс" autocomplete="off">
+  </div>
+  <div class="filter-row" id="navFilter" aria-label="Быстрый фильтр разделов">
+    <button type="button" data-filter="all" aria-pressed="true">Все</button>
+    <button type="button" data-filter="p0" aria-pressed="false">P0</button>
+    <button type="button" data-filter="legal" aria-pressed="false">Юр.</button>
+    <button type="button" data-filter="review" aria-pressed="false">Проверка</button>
   </div>
   <button id="menuToggle" class="menu-toggle" type="button" aria-controls="nav" aria-expanded="true">Скрыть меню</button>
   <nav id="nav" aria-label="Разделы политики"></nav>
@@ -72,12 +78,15 @@
     </div>
     <div class="top-actions">
       <span class="chip" id="sectionStats" title="Сводка раздела">10 разделов</span>
+      <button class="chip action-chip" id="copyLink" type="button">Ссылка</button>
+      <button class="chip action-chip" id="topExport" type="button">Раздел в .md</button>
       <a class="chip" href="https://github.com/belilovsky/editorial-hub" target="_blank" rel="noopener noreferrer" aria-label="Открыть репозиторий Редакционного центра на GitHub">GitHub ↗</a>
     </div>
   </header>
   <section id="view"></section>
 </main>
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <script src="./data.js?v=20260611b"></script>
-<script src="./app.js?v=20260611b"></script>
+<script src="./app.js?v=20260611c"></script>
 </body>
 </html>
