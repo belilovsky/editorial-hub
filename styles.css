@@ -19,9 +19,9 @@ html[data-theme="dark"]{
 }
 html[data-theme="golden-paper"]{
   --background:hsl(40 30% 96%);--foreground:hsl(30 16% 14%);--card:hsl(42 38% 98%);--border:hsl(36 24% 83%);
-  --muted:hsl(40 24% 90%);--muted-foreground:hsl(30 10% 40%);--primary:hsl(38 59% 46%);--secondary:hsl(40 24% 88%);--destructive:hsl(14 56% 42%);
-  --primary-foreground:hsl(40 30% 96%);
-  --chart-1:hsl(38 59% 46%);--chart-2:hsl(151 42% 31%);--chart-3:hsl(14 56% 42%);--chart-4:hsl(30 18% 38%);--chart-5:hsl(8 62% 38%);
+  --muted:hsl(40 24% 90%);--muted-foreground:hsl(30 10% 35%);--primary:hsl(36 72% 30%);--secondary:hsl(40 24% 88%);--destructive:hsl(14 56% 38%);
+  --primary-foreground:hsl(40 35% 98%);
+  --chart-1:hsl(36 72% 30%);--chart-2:hsl(151 42% 29%);--chart-3:hsl(14 56% 38%);--chart-4:hsl(30 18% 34%);--chart-5:hsl(8 62% 34%);
   --shadow:0 1px 3px hsl(30 16% 14% / .06);--shadow-lg:0 8px 20px hsl(30 16% 14% / .09);
   color-scheme:light;
 }
@@ -36,6 +36,7 @@ html[data-theme="golden-paper"]{
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--background);color:var(--foreground);font-family:var(--font-sans);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
 body{display:grid;grid-template-columns:320px 1fr;min-height:100vh;background:var(--background)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 a{color:var(--primary);text-decoration:none}
 a:hover{text-decoration:underline}
 code,pre,kbd{font-family:var(--font-mono)}
@@ -98,6 +99,7 @@ code,pre,kbd{font-family:var(--font-mono)}
 .foot-row a,.foot-row button{flex:1;background:var(--background);border:1px solid var(--border);color:var(--foreground);padding:8px 8px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:inherit;text-align:center}
 .search-controls{display:flex;gap:6px}
 .search-controls a,.search-controls button{flex:1;background:var(--background);border:1px solid var(--border);color:var(--foreground);padding:8px 8px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:inherit;text-align:center}
+.menu-toggle{display:none;background:var(--background);border:1px solid var(--border);color:var(--foreground);padding:9px 10px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:inherit;text-align:center}
 .foot-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;color:var(--muted-foreground);font-size:11px;letter-spacing:0;text-align:center;padding-top:2px}
 .foot-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:var(--secondary);border:1px solid color-mix(in srgb,var(--primary) 16%,var(--border));color:var(--primary);font-size:10px;font-weight:600;line-height:1.2}
 #main{padding:24px 32px 40px;max-width:1240px;width:100%;min-width:0}
@@ -179,7 +181,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   .overview-card:hover{transform:none}
 }
 @media(max-width:1024px){body{grid-template-columns:1fr}#sidebar{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--border)}#nav{max-height:320px}#main{padding:18px}.meta-grid,.overview-grid,.signal-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:720px){#sidebar{padding:14px 16px;gap:12px}#nav{max-height:240px}.brand-title{font-size:18px}#topbar{flex-direction:column}.top-actions{width:100%;flex-wrap:wrap}.chip{justify-content:center}.meta-grid,.overview-grid,.signal-grid{grid-template-columns:1fr}.doc-body,.section-header{padding:20px}.section-title{font-size:28px}.theme-row{grid-template-columns:repeat(3,minmax(0,1fr))}.theme-row button{font-size:11px;padding:8px 4px}}
+@media(max-width:720px){#sidebar{padding:14px 16px;gap:12px}#nav{max-height:240px}.menu-toggle{display:block}#nav.nav-collapsed{display:none}.brand-title{font-size:18px}#topbar{flex-direction:column}.top-actions{width:100%;flex-wrap:wrap}.chip{justify-content:center}.meta-grid,.overview-grid,.signal-grid{grid-template-columns:1fr}.doc-body,.section-header{padding:20px}.section-title{font-size:28px}.theme-row{grid-template-columns:repeat(3,minmax(0,1fr))}.theme-row button{font-size:11px;padding:8px 4px}}
 @media print{
   :root,html[data-theme]{--background:hsl(0 0% 100%);--foreground:hsl(220 25% 10%);--card:hsl(0 0% 100%);--border:hsl(216 12% 82%);--muted-foreground:hsl(216 10% 36%);color-scheme:light}
   body{display:block;background:var(--background)}

@@ -5,14 +5,17 @@
   const crumbEl = document.getElementById('crumb');
   const sectionLeadEl = document.getElementById('sectionLead');
   const sectionStatsEl = document.getElementById('sectionStats');
+  const routeAnnouncer = document.getElementById('routeAnnouncer');
   const themeRow = document.getElementById('themeRow');
   const exportBtn = document.getElementById('exportMd');
   const exportAllBtn = document.getElementById('exportAllMd');
   const searchEl = document.getElementById('search');
   const clearSearchBtn = document.getElementById('clearSearch');
   const themeColorEl = document.getElementById('themeColor');
+  const menuToggle = document.getElementById('menuToggle');
   const html = document.documentElement;
   const THEMES = ['light','dark','golden-paper'];
+  const HASH_SEPARATOR = '::';
   const STATUS_LABELS = {
     'template-ready': 'готово как шаблон',
     'requires-review': 'требует проверки',
@@ -82,7 +85,7 @@
   function attr(s){return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   function safeHref(href){
     const raw = String(href || '').trim();
-    if(/^#[A-Za-z0-9_-]+$/.test(raw)) return raw;
+    if(/^#[\p{L}0-9_-]+(?:::[\p{L}0-9_-]+)?$/u.test(raw)) return raw;
     try{
       const url = new URL(raw, window.location.href);
       return /^(https?:)$/i.test(url.protocol) ? url.href : '#';
@@ -121,15 +124,41 @@
       .toLowerCase()
       .replace(/<[^>]*>/g,'')
       .replace(/[\s_]+/g,'-')
-      .replace(/[^a-zа-я0-9-]/g,'')
+      .replace(/[^\p{L}0-9-]/gu,'')
       .replace(/-+/g,'-')
       .replace(/^-|-$/g,'');
+  }
+
+  function defaultSectionId(){
+    return D.sections[0] && D.sections[0].id ? D.sections[0].id : 'overview';
+  }
+
+  function splitHash(rawHash){
+    const raw = decodeURIComponent(String(rawHash || '').replace(/^#/, '')).trim();
+    if(!raw) return { sectionId: defaultSectionId(), headingId: '' };
+    const parts = raw.split(HASH_SEPARATOR);
+    return {
+      sectionId: parts[0] || defaultSectionId(),
+      headingId: parts.slice(1).join(HASH_SEPARATOR) || ''
+    };
+  }
+
+  function currentRoute(){
+    return splitHash(window.location.hash);
+  }
+
+  function uniqueHeadingId(text, counters, fallback){
+    const base = slugify(text) || fallback || 'section-heading';
+    const count = counters.get(base) || 0;
+    counters.set(base, count + 1);
+    return count ? `${base}-${count + 1}` : base;
   }
 
   function parseMarkdown(src){
     const lines = src.split('\n');
     const headings = [];
     const rendered = [];
+    const headingCounters = new Map();
     let i = 0;
     while(i < lines.length){
       const l = lines[i];
@@ -163,7 +192,7 @@
       if((m = l.match(/^(#{1,6})\s+(.*)$/))){
         const n = m[1].length;
         const headingText = m[2].trim();
-        const id = slugify(headingText) || `h${n}-${rendered.length}`;
+        const id = uniqueHeadingId(headingText, headingCounters, `h${n}-${rendered.length}`);
         headings.push({ level: n, id, text: headingText });
         rendered.push(`<h${n} id="${attr(id)}">${inline(headingText)}</h${n}>`);
         i++;
@@ -264,7 +293,7 @@
   }
 
   function sectionById(id){
-    return D.sections.find(x=>x.id===id) || D.sections[0];
+    return D.sections.find(x=>x.id===id) || null;
   }
 
   function getFeaturedSections(){
@@ -302,22 +331,34 @@
       const wrap = document.createElement('div');
       wrap.className = 'nav-group';
       const label = document.createElement('button');
+      const groupId = `nav-group-${slugify(title) || 'group'}`;
       label.type = 'button';
       label.className = 'nav-group-title';
       label.textContent = `${title} (${sections.length})`;
-      label.setAttribute('aria-expanded', 'true');
+      label.id = `${groupId}-button`;
+      label.setAttribute('aria-controls', groupId);
       label.dataset.group = title;
       const list = document.createElement('div');
+      list.id = groupId;
+      list.setAttribute('aria-labelledby', label.id);
       list.className = 'nav-group-list';
       const hasSearchFilter = !!((filter || '').trim());
-      if(hasSearchFilter && sections.length > 8){
+      let expanded = expandedGroups.has(title);
+      if(!expandedGroupsInitialized && !hasSearchFilter) expanded = true;
+      if(hasSearchFilter && sections.length > 8 && !expandedGroups.has(title)){
+        expanded = false;
+      }
+      label.setAttribute('aria-expanded', String(expanded));
+      if(!expanded){
         list.classList.add('collapsed');
-        label.setAttribute('aria-expanded', 'false');
       }
       label.addEventListener('click', () => {
         const collapsed = !list.classList.contains('collapsed');
         list.classList.toggle('collapsed', collapsed);
         label.setAttribute('aria-expanded', String(!collapsed));
+        if(collapsed) expandedGroups.delete(title);
+        else expandedGroups.add(title);
+        saveExpandedGroups();
       });
       wrap.appendChild(label);
       sections.forEach(s=>{
@@ -327,7 +368,7 @@
         a.innerHTML = `<span class="nav-link-text">${esc(title)}</span>`;
         a.dataset.id = s.id;
         a.dataset.label = title;
-        if(location.hash.slice(1) === s.id){
+        if(currentRoute().sectionId === s.id){
           a.classList.add('active');
           a.setAttribute('aria-current', 'page');
         }
@@ -367,7 +408,8 @@
     if(!headings.length) return '';
       const items = headings.map(item => {
       const pad = Math.max(0, item.level - 2) * 12;
-      return `<li style="--toc-pad:${pad}px"><a href="#${attr(item.id)}">${esc(item.text)}</a></li>`;
+      const sectionId = currentRoute().sectionId || defaultSectionId();
+      return `<li style="--toc-pad:${pad}px"><a href="#${attr(sectionId)}${HASH_SEPARATOR}${attr(item.id)}">${esc(item.text)}</a></li>`;
     }).join('');
     return `<nav class="toc" aria-label="Оглавление раздела"><h3>Оглавление</h3><ul>${items}</ul></nav>`;
   }
@@ -390,9 +432,66 @@
     return `<section class="related"><h3>Связанные разделы</h3><ul>${links.join('')}</ul></section>`;
   }
 
+  function renderNotFound(sectionId){
+    const safeId = sectionId || 'не указан';
+    crumbEl.textContent = 'Раздел не найден';
+    if(sectionLeadEl) sectionLeadEl.textContent = `Раздел #${safeId} отсутствует в текущей редакционной политике.`;
+    if(sectionStatsEl) sectionStatsEl.textContent = '404 раздела';
+    viewEl.innerHTML = `
+      <div class="section-shell">
+        <section class="section-header" role="alert">
+          <div class="section-eyebrow">404</div>
+          <h1 class="section-title" tabindex="-1">Раздел не найден</h1>
+          <p class="section-summary">В политике нет раздела с идентификатором <code>${esc(safeId)}</code>. Вернитесь к обзору или выберите раздел в меню.</p>
+        </section>
+        <section class="doc-body">
+          <p><a class="chip" href="#${attr(defaultSectionId())}">Вернуться к обзору</a></p>
+        </section>
+      </div>`;
+    navEl.querySelectorAll('a').forEach(a=>{
+      a.classList.remove('active');
+      a.removeAttribute('aria-current');
+    });
+    document.title = `Раздел не найден — ${D.meta.title}`;
+    announceRoute('Раздел не найден');
+    focusRenderedHeading();
+  }
+
+  function announceRoute(title){
+    if(routeAnnouncer) routeAnnouncer.textContent = `Раздел: ${title}`;
+  }
+
+  function focusRenderedHeading(){
+    const h1 = viewEl.querySelector('h1');
+    if(h1 && h1.focus){
+      h1.focus({ preventScroll: true });
+    } else if(viewEl.focus) {
+      viewEl.setAttribute('tabindex', '-1');
+      viewEl.focus({ preventScroll: true });
+    }
+  }
+
+  function scrollToHeading(headingId){
+    if(!headingId){
+      window.scrollTo(0, 0);
+      return;
+    }
+    const target = document.getElementById(headingId);
+    if(target && target.scrollIntoView){
+      target.scrollIntoView({ block: 'start' });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }
+
   function renderView(){
-    const id = location.hash.slice(1) || D.sections[0].id;
-    const s = normalizeSection(sectionById(id));
+    const route = currentRoute();
+    const rawSection = sectionById(route.sectionId);
+    if(!rawSection){
+      renderNotFound(route.sectionId);
+      return;
+    }
+    const s = normalizeSection(rawSection);
     const title = titleOf(s);
     const summary = s.summary || firstParagraph(s.body);
     const quickItems = excerptItems(s.body, 4);
@@ -407,7 +506,7 @@
       <div class="section-shell">
         <section class="section-header">
           <div class="section-eyebrow">${esc(s.id)}</div>
-          <h1 class="section-title">${esc(title)}</h1>
+          <h1 class="section-title" tabindex="-1">${esc(title)}</h1>
           <p class="section-summary">${esc(summary)}</p>
         </section>
         <section class="meta-grid">
@@ -451,10 +550,15 @@
       activeLink.scrollIntoView({ block: 'nearest' });
     }
     document.title = `${title} \u2014 ${D.meta.title}`;
+    announceRoute(title);
+    requestAnimationFrame(() => {
+      focusRenderedHeading();
+      scrollToHeading(route.headingId);
+    });
   }
   function exportMd(e){
     e && e.preventDefault();
-    const id = location.hash.slice(1) || D.sections[0].id;
+    const id = currentRoute().sectionId || defaultSectionId();
     const s = normalizeSection(D.sections.find(x=>x.id===id) || D.sections[0]);
     const content = `# ${titleOf(s)}\n\n${stripFirstHeading(s.body)}`.trim();
     const name = `${s.id}.md`;
@@ -464,14 +568,20 @@
   function exportAllMd(e){
     e && e.preventDefault();
     const entries = D.sections.map(normalizeSection);
-    const toc = ['## Содержание', '', ...entries.map((section, index)=>`${index + 1}. [${titleOf(section)}](#${section.id})`), '', ''].join('\n');
+    const exportDate = new Date().toISOString().slice(0, 10);
+    const toc = ['## Содержание', '', ...entries.map((section, index)=>`${index + 1}. [${titleOf(section)}](#${slugify(titleOf(section)) || section.id})`), '', ''].join('\n');
     const body = entries.map(section=>{
-      const heading = `## ${titleOf(section)} (/${section.id})`;
+      const heading = `## ${titleOf(section)}`;
       const normalizedBody = stripFirstHeading(section.body);
-      const related = section.related.length ? `\n\n### Связанные разделы\n${section.related.map(r => `- ${r}`).join('\n')}` : '';
-      return `${heading}\n\n${normalizedBody}\n${related}`;
+      const related = section.related.length ? `\n\n### Связанные разделы\n${section.related.map(r => {
+        const relatedSection = sectionById(String(r || '').trim());
+        const relatedTitle = relatedSection ? titleOf(relatedSection) : String(r || '').trim();
+        const relatedHref = relatedSection ? `#${relatedSection.id}` : '';
+        return relatedHref ? `- [${relatedTitle}](${relatedHref})` : `- ${relatedTitle}`;
+      }).join('\n')}` : '';
+      return `${heading}\n\nИдентификатор раздела: \`${section.id}\`\n\n${normalizedBody}\n${related}`;
     }).join('\n\n---\n\n');
-    const content = `# ${D.meta.title} v${D.meta.version}\n\n- обновлено: ${D.meta.updated}\n- статус: ${formatMetaStatus(D.meta.status)}\n- языки: ${(D.meta.langs || []).join(', ')}\n\n${toc}${body}`;
+    const content = `# ${D.meta.title}\n\n- Версия: v${D.meta.version}\n- Дата экспорта: ${exportDate}\n- Обновлено в данных: ${D.meta.updated}\n- Статус: ${formatMetaStatus(D.meta.status)}\n- Языки: ${(D.meta.langs || []).join(', ')}\n\n${toc}${body}`;
     downloadMarkdown(content, `editorial-hub-v${D.meta.version}.md`);
   }
 
@@ -499,8 +609,41 @@
   if(exportAllBtn){
     exportAllBtn.addEventListener('click', exportAllMd);
   }
-  window.addEventListener('hashchange', ()=>{ renderView(); renderNav(searchEl ? searchEl.value : ''); window.scrollTo(0,0); });
+  if(menuToggle){
+    menuToggle.addEventListener('click', () => {
+      const collapsed = !navEl.classList.contains('nav-collapsed');
+      navEl.classList.toggle('nav-collapsed', collapsed);
+      menuToggle.setAttribute('aria-expanded', String(!collapsed));
+      menuToggle.textContent = collapsed ? 'Показать меню' : 'Скрыть меню';
+    });
+  }
+  function loadExpandedGroups(){
+    try{
+      const raw = localStorage.getItem('eh-expanded-groups');
+      const parsed = raw ? JSON.parse(raw) : null;
+      if(Array.isArray(parsed)) return new Set(parsed);
+    }catch(_e){}
+    return new Set();
+  }
 
+  function saveExpandedGroups(){
+    try { localStorage.setItem('eh-expanded-groups', JSON.stringify([...expandedGroups])); }
+    catch(_e){}
+  }
+
+  let expandedGroups = loadExpandedGroups();
+  let expandedGroupsInitialized = expandedGroups.size > 0;
+
+  function ensureDefaultExpandedGroups(){
+    if(expandedGroupsInitialized) return;
+    for(const group of groupSections('').keys()) expandedGroups.add(group);
+    expandedGroupsInitialized = true;
+    saveExpandedGroups();
+  }
+
+  window.addEventListener('hashchange', ()=>{ renderView(); renderNav(searchEl ? searchEl.value : ''); });
+
+  ensureDefaultExpandedGroups();
   renderNav('');
-  if(!location.hash) location.hash = D.sections[0].id; else renderView();
+  if(!location.hash) location.hash = defaultSectionId(); else renderView();
 })();
