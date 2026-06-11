@@ -44,6 +44,7 @@ assert(html.includes('<main id="main" role="main" tabindex="-1">'), 'main landma
 assert(html.includes('id="menuToggle"') && html.includes('aria-controls="nav"'), 'mobile menu toggle is missing');
 assert(html.includes('./styles.css?v=20260611a') && html.includes('./app.js?v=20260611a'), 'asset cache-bust was not updated');
 assert(styles.includes('.sr-only'), 'sr-only helper is missing');
+assert(styles.includes('.section-title:focus:not(:focus-visible)'), 'programmatic h1 focus should not draw a persistent focus ring');
 assert(styles.includes('.menu-toggle') && styles.includes('.nav-collapsed'), 'mobile menu CSS is missing');
 assert(styles.includes('--primary:hsl(36 72% 30%)'), 'golden-paper primary contrast was not updated');
 
@@ -59,6 +60,7 @@ for (const snippet of [
   "label.setAttribute('aria-controls', groupId)",
   "localStorage.setItem('eh-expanded-groups'",
   "menuToggle.setAttribute('aria-expanded'",
+  'function applyResponsiveMenuDefault',
   'Дата экспорта',
   'Версия: v${D.meta.version}',
   '`#${relatedSection.id}`',

@@ -617,6 +617,13 @@
       menuToggle.textContent = collapsed ? 'Показать меню' : 'Скрыть меню';
     });
   }
+  function applyResponsiveMenuDefault(){
+    if(!menuToggle || !window.matchMedia) return;
+    const shouldCollapse = window.matchMedia('(max-width: 720px)').matches;
+    navEl.classList.toggle('nav-collapsed', shouldCollapse);
+    menuToggle.setAttribute('aria-expanded', String(!shouldCollapse));
+    menuToggle.textContent = shouldCollapse ? 'Показать меню' : 'Скрыть меню';
+  }
   function loadExpandedGroups(){
     try{
       const raw = localStorage.getItem('eh-expanded-groups');
@@ -642,8 +649,10 @@
   }
 
   window.addEventListener('hashchange', ()=>{ renderView(); renderNav(searchEl ? searchEl.value : ''); });
+  window.addEventListener('resize', applyResponsiveMenuDefault);
 
   ensureDefaultExpandedGroups();
   renderNav('');
+  applyResponsiveMenuDefault();
   if(!location.hash) location.hash = defaultSectionId(); else renderView();
 })();

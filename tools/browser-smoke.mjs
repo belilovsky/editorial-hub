@@ -84,9 +84,12 @@ try {
   await check(linkColor !== 'rgb(255, 255, 255)', 'golden-paper link color should be readable, not white');
 
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload({ waitUntil: 'networkidle' });
+  await check(await page.locator('#menuToggle').getAttribute('aria-expanded') === 'false', 'mobile menu should start collapsed');
+  await check(await page.locator('#nav').evaluate(el => el.classList.contains('nav-collapsed')), 'mobile nav should start collapsed');
   await page.locator('#menuToggle').click();
-  await check(await page.locator('#menuToggle').getAttribute('aria-expanded') === 'false', 'mobile menu toggle should update aria-expanded');
-  await check(await page.locator('#nav').evaluate(el => el.classList.contains('nav-collapsed')), 'mobile menu toggle should collapse nav');
+  await check(await page.locator('#menuToggle').getAttribute('aria-expanded') === 'true', 'mobile menu toggle should update aria-expanded');
+  await check(await page.locator('#nav').evaluate(el => !el.classList.contains('nav-collapsed')), 'mobile menu toggle should expand nav');
 } finally {
   await browser.close();
   server.close();

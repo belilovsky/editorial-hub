@@ -114,6 +114,7 @@ code,pre,kbd{font-family:var(--font-mono)}
 .section-header{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 26px;box-shadow:var(--shadow)}
 .section-eyebrow{color:var(--muted-foreground);font-size:11px;font-weight:600;letter-spacing:0;text-transform:uppercase;margin-bottom:10px}
 .section-title{font-family:var(--font-serif);font-size:34px;font-weight:600;line-height:1.15;margin:0 0 10px;letter-spacing:0}
+.section-title:focus:not(:focus-visible){outline:none}
 .section-summary{color:var(--muted-foreground);font-size:15px;line-height:1.6;max-width:760px;margin:0}
 .meta-grid,.overview-grid,.signal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .meta-card,.overview-card,.signal-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
