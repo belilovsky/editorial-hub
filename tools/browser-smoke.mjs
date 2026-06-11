@@ -107,6 +107,7 @@ try {
   const downloadPromise = page.waitForEvent('download');
   await page.locator('#exportAllMd').click();
   const download = await downloadPromise;
+  await check(download.suggestedFilename() === 'редакционный-центр-v2.0.md', 'export should use Russian policy filename');
   const stream = await download.createReadStream();
   const chunks = [];
   for await (const chunk of stream) chunks.push(chunk);

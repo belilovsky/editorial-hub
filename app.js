@@ -588,7 +588,7 @@
       return `${heading}\n\nИдентификатор раздела: \`${section.id}\`\n\n${normalizedBody}\n${related}`;
     }).join('\n\n---\n\n');
     const content = `# ${D.meta.title}\n\n- Версия: v${D.meta.version}\n- Дата экспорта: ${exportDate}\n- Обновлено в данных: ${D.meta.updated}\n- Статус: ${formatMetaStatus(D.meta.status)}\n- Языки: ${(D.meta.langs || []).join(', ')}\n\n${toc}${body}`;
-    downloadMarkdown(content, `editorial-hub-v${D.meta.version}.md`);
+    downloadMarkdown(content, `редакционный-центр-v${D.meta.version}.md`);
   }
 
   function downloadMarkdown(content, name){
